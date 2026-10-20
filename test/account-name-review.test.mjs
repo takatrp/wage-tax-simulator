@@ -108,7 +108,7 @@ test('independent: detailed UI retains off-page selection and clears review conf
   const ui=detailedUi();
   const extra=Array.from({length:75},(_,i)=>journalRow({伝票番号:'PAGE-'+i,借方科目コード:'OTHER-'+i,借方科目名:'架空科目'+String(i).padStart(2,'0'),借方取引金額:'1',借方税抜き金額:'1'}));
   await ui.load([journal({extra}),journal({start:'2025-04',months:12,prefix:'PREV'})]);await ui.event('#fxAnalyze');
-  assert.equal(ui.maps().length,50);await ui.event('#fxAccountNext');const last=ui.maps().at(-1),index=last.dataset.fxMap;last.value='bonus';await last.dispatch('change');
+  assert.equal(ui.maps().length,1);await ui.event('#fxAddAccounts');assert.equal(ui.maps().length,50);await ui.event('#fxAccountNext');const last=ui.maps().at(-1),index=last.dataset.fxMap;last.value='bonus';await last.dispatch('change');
   ui.element('#fxAccountSearch').value='架空科目74';await ui.event('#fxAccountSearch','input');
   assert.equal(ui.maps().length,1);assert.equal(ui.maps()[0].dataset.fxMap,index);assert.equal(ui.maps()[0].value,'bonus');
   ui.element('#fxCompany').value='架空確認法人';ui.element('#fxBasis').value='架空照合';

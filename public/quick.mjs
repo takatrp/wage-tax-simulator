@@ -22,10 +22,12 @@ export function quickPeriods(start, through) {
 export function analyzeQuick(files, {start,through,mapping={}}) {
   const period=quickPeriods(start,through), errors=[], warnings=[], companies=new Set();
   const {uniqueFiles,...duplicateDiagnostics}=inspectJournalOverlap(files,{period,mapping});warnings.push(...overlapWarnings(duplicateDiagnostics),...uniqueFiles.flatMap(f=>f.warnings??[]));
-  const accounts=payrollAccounts(uniqueFiles,{period,mapping}),periodMonths=new Set([...period.current,...period.previous]);warnings.push(...accountNameWarnings(accounts));
+  const fiscalMonths=quickPeriods(start,monthAt(monthIndex(start)+11)).current;
+  const accounts=payrollAccounts(uniqueFiles,{period,mapping}),periodMonths=new Set([...fiscalMonths,...period.previous]);warnings.push(...accountNameWarnings(accounts));
   for(const file of uniqueFiles){
     for(const company of file.companies||[])companies.add(company);
     if((file.transactions||[]).some(t=>!periodMonths.has(t.date.slice(0,7))))errors.push('対象期間外の仕訳があります。年度・入力済み月またはファイルを確認してください。');
+    if((file.transactions||[]).some(t=>fiscalMonths.includes(t.date.slice(0,7))&&!period.current.includes(t.date.slice(0,7))))warnings.push('当期の最終完了月より後の仕訳は、今回の累計・賞与集計に含めていません。');
   }
   // Company labels can differ by field; conflicting values within the same identification field stop aggregation.
   const companyFields=new Map();for(const c of companies){const p=c.indexOf(':');const k=c.slice(0,p),v=c.slice(p+1);if(!companyFields.has(k))companyFields.set(k,new Set());companyFields.get(k).add(v);}
@@ -45,10 +47,10 @@ export function analyzeQuick(files, {start,through,mapping={}}) {
   if(errorCount>errors.length)errors.push('ほか'+(errorCount-errors.length).toLocaleString('ja-JP')+'件の科目エラーがあります。科目一覧で確認してください。');
   for(const s of ['current','previous'])for(const k of ['regular','bonus'])if(total[s][k]<0n)errors.push('給与科目の差引額がマイナスです。科目・期間・取消仕訳を確認してください。');
   const currentComplete=period.current.every(m=>regularMonths.current.has(m)),previousComplete=period.previous.every(m=>regularMonths.previous.has(m));
-  if(!currentComplete)warnings.push('当期の通常給与を全入力月で確認できません。通常給与累計を補ってください。空欄は0円として扱いません。');
+  if(!currentComplete)warnings.push('当期の通常給与を全入力月で確認できません。選択帳簿の小計を表示し、欠落月を0円とは扱わず試算を保留します。対象期間・科目・不足CSVを確認してください。');
   if(!previousComplete)warnings.push('前年通年の通常給与を確認できません。前年通年給与を1つ入力してください。前年同期間額を通年額には使いません。');
   warnings.push('仕訳が各月にあることは全件収録の証明ではありません。選択月までの給与が入力済みであると仮定します。');
-  return{period,duplicateDiagnostics,requiresOverlapConfirmation:duplicateDiagnostics.requiresConfirmation,accounts,errors:[...new Set(errors)],warnings:[...new Set(warnings)],currentRegular:currentComplete?String(total.current.regular):null,paidBonus:String(total.current.bonus),previousAnnual:previousComplete?String(total.previous.regular+total.previous.bonus):null};
+  return{period,duplicateDiagnostics,requiresOverlapConfirmation:duplicateDiagnostics.requiresConfirmation,accounts,errors:[...new Set(errors)],warnings:[...new Set(warnings)],currentComplete,previousComplete,selectedRegularCount:accounts.filter(a=>a.kind==='regular').length,selectedCurrentRegular:String(total.current.regular),currentRegular:currentComplete?String(total.current.regular):null,paidBonus:String(total.current.bonus),previousAnnual:previousComplete?String(total.previous.regular+total.previous.bonus):null};
 }
 function signed(value,label){const s=String(value??'');if(!/^-?(0|[1-9]\d*)$/.test(s)||s==='-0')throw Error(`${label}は整数の円額で入力してください。`);const n=BigInt(s);if(n>MAX_AMOUNT||n< -MAX_AMOUNT)throw Error(`${label}が大きすぎます。`);return n;}
 export function estimateQuick(input){

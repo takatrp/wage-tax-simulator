@@ -1,6 +1,6 @@
 // All rules remain draft until an independent tax reviewer approves code + source hashes.
 export const TOOL_NAME = '賃上げ促進税制シミュレーター';
-export const RULE_VERSION = 'jp-corp-wage-2026.10.20-web.9';
+export const RULE_VERSION = 'jp-corp-wage-2026.10.21-web.10';
 export const SOURCES = [
   { id: 'nta-sme', title: '国税庁 No.5927-2（中小企業者等）', url: 'https://www.nta.go.jp/taxes/shiraberu/taxanswer/hojin/5927-2.htm', format: 'html' },
   { id: 'nta-mid', title: '国税庁 No.5927-3（中堅企業）', url: 'https://www.nta.go.jp/taxes/shiraberu/taxanswer/hojin/5927-3.htm', format: 'html' },

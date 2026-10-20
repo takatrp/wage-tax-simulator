@@ -52,12 +52,14 @@ export const isPayrollKind=kind=>['regular','bonus','pending'].includes(kind);
 export function checkedPayrollKind(account,checked) {
   return !checked?'exclude':['regular','bonus'].includes(account.kind)?account.kind:['regular','bonus'].includes(account.suggestion)?account.suggestion:'pending';
 }
-export function accountTable(accounts,{prefix,page=0,query=''}={}) {
+export function accountTable(accounts,{prefix,page=0,query='',candidatesOnly=false,addedKeys=new Set(),periodKnown=true}={}) {
   const needle=normalize(query).toLocaleLowerCase('ja-JP');
-  const matches=accounts.map((a,index)=>({a,index})).filter(({a})=>!needle||normalize([a.name,a.code,a.departmentName,a.departmentCode].join(' ')).toLocaleLowerCase('ja-JP').includes(needle));
+  // Keep original indexes: filtering/paging must never remap a checkbox to another account.
+  const visible=accounts.map((a,index)=>({a,index})).filter(({a})=>!candidatesOnly||['regular','bonus'].includes(a.suggestion)||addedKeys.has(a.key));
+  const matches=visible.filter(({a})=>!needle||normalize([a.name,a.code,a.departmentName,a.departmentCode].join(' ')).toLocaleLowerCase('ja-JP').includes(needle));
   const pages=Math.max(1,Math.ceil(matches.length/50)),safePage=Math.max(0,Math.min(page,pages-1)),shown=matches.slice(safePage*50,(safePage+1)*50);
   const options=[['regular','通常給与'],['bonus','賞与'],['pending','選択中・区分を要確認'],['exclude','集計しない'],['unknown','未分類・集計しない'],['support','補助金等・給与に加算しない']];
-  const yen=value=>new Intl.NumberFormat('ja-JP').format(BigInt(value));
+  const yen=value=>periodKnown?new Intl.NumberFormat('ja-JP').format(BigInt(value)):'期間未確定';
   const html='<div class="table-scroll"><table class="account-table"><thead><tr><th scope="col">集計</th><th scope="col">科目名 / コード / 部門</th><th scope="col">資料</th><th scope="col">当期入力期間（円）</th><th scope="col">前年通年（円）</th><th scope="col">扱い / 候補の理由</th></tr></thead><tbody>'+shown.map(({a,index})=>'<tr><td><input type="checkbox" data-'+prefix+'-account="'+index+'" aria-label="'+escape(a.name+' '+a.code+' '+(a.departmentName||a.departmentCode||'部門なし')+'を集計')+'" '+(isPayrollKind(a.kind)?'checked':'')+'></td><td><strong>'+escape(a.name)+'</strong><br>コード '+escape(a.code)+'<br>'+escape(a.departmentName||a.departmentCode?'部門 '+[a.departmentCode,a.departmentName].filter(Boolean).join(' '):'部門なし')+'</td><td>'+a.sourceFiles.map(n=>'資料'+n).join(' / ')+'</td><td class="money">'+yen(a.current)+'</td><td class="money">'+yen(a.previous)+'</td><td><label><span class="account-control-label">'+escape(a.name+' '+a.code+' '+(a.departmentName||a.departmentCode||'部門なし')+'の扱い')+'</span><select data-'+prefix+'-map="'+index+'">'+options.map(([value,label])=>'<option value="'+value+'" '+(a.kind===value?'selected':'')+'>'+label+'</option>').join('')+'</select></label><small>'+escape(a.reason)+'</small></td></tr>').join('')+'</tbody></table></div>';
-  return {html:matches.length?html:'<p>該当する科目がありません。</p>',page:safePage,pages,count:matches.length,total:accounts.length};
+  return {html:matches.length?html:'<p>該当する科目がありません。必要な科目は「他の科目を追加」から選べます。</p>',page:safePage,pages,count:matches.length,total:accounts.length,visible:visible.length};
 }

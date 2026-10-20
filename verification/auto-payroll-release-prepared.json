@@ -1,0 +1,42 @@
+{
+  "preparedAt": "2026-10-20T23:47:19.776Z",
+  "base": "d33c1b6fcd317f063173e6d22919fea1e71a4d72",
+  "ruleVersion": "jp-corp-wage-2026.10.21-web.10",
+  "codeHash": "860c832c71c37bb8772b3f37d8024dcd4cf5581fe9a544f277cde61b17fc9c24",
+  "clientHash": "88dd4b84e8a364e20074d29d3fc86d0bbb1c499301d1a71602f535b1141294e5",
+  "testExitCode": 0,
+  "testSummary": [
+    "ℹ tests 247",
+    "ℹ pass 247",
+    "ℹ fail 0",
+    "ℹ cancelled 0",
+    "ℹ skipped 0",
+    "ℹ duration_ms 23166.8313"
+  ],
+  "taxArithmeticUnchanged": true,
+  "taxRulesOnlyVersionMetadataChanged": true,
+  "featureApprovalScopeUnchanged": true,
+  "sourceHashes": {
+    "public/rules.mjs": "8f85cb6c5c603510b1517f03363867f8369c069bc17bcfd06566968c71addfd2",
+    "public/quick.mjs": "9ed3ff8ea320d73ba79212155d14522653959720eaa628810d1e5eb25a553c10",
+    "public/payroll-accounts.mjs": "6058356da464cc31b7541da99593860d0053c090fb69ddcd55e043f89ba22455",
+    "public/fxcloud.mjs": "a6e0812f0306dfaae26853fc6697b2a8ee0c5b28f2de224115b423cac9bb12da",
+    "public/quick-ui.mjs": "47e5119b91e3b39631fbd63abc9ba57c6904ff49d1cbf5bee410ae2c2695f32e",
+    "public/fx-ui.mjs": "7f5592c66ef959edd0063fb4a677ee50e89dc8f88bf6502befc50ff6051de90f"
+  },
+  "independentReview": {
+    "file": "test/auto-payroll-review.test.mjs",
+    "tests": 15,
+    "unresolvedMajorFindings": 0,
+    "sameFileReselectFollowup": "quick UI 34 tests passed; no unresolved findings"
+  },
+  "apiDeployment": {
+    "projectId": "appgprj_6ad6e84462b88191af122b3b9a9869b0",
+    "sourceCommit": "414301d9ea8cf6b4e06fe561c73aad09cdba7be8",
+    "versionNumber": 11,
+    "versionId": "appgprj_6ad6e84462b88191af122b3b9a9869b0~appgver_8663972e15148191ab9279c75e5098ac",
+    "deploymentId": "appgdep_6ad7fe3cc394819193b9274c173cb448",
+    "status": "succeeded",
+    "updatedAt": "2026-10-20T23:50:25.930125+00:00"
+  }
+}
