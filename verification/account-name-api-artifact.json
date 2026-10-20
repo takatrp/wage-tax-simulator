@@ -1,0 +1,21 @@
+{
+  "archive": "C:\\Users\\Matsumoto-kobe05\\Documents\\Codex\\2026-10-20\\task\\wage-tax-rule-check-web9-account-selection.tar.gz",
+  "archiveBytes": 7354,
+  "archiveSha256": "e97bcbc75223dbfbd7edfef4bf34435c6a507d1c99e5cbdcd116786cc8a67a7b",
+  "entries": [
+    "dist",
+    "dist/.openai",
+    "dist/.openai/hosting.json",
+    "dist/server",
+    "dist/server/index.js"
+  ],
+  "sourceCommit": "1088a921f642bdb699a0681c1ca9c3c794053724",
+  "workerBytes": 18344,
+  "workerSha256": "eb166789b74485a1a0f3c35cbf6565b0585c71155ab9026705a4edc5ef5377d2",
+  "sourceEqualsCommitEqualsBuildEqualsArchive": true,
+  "primaryPreparedMatchAfterLineEndingCanonicalization": true,
+  "ruleVersion": "jp-corp-wage-2026.10.20-web.9",
+  "codeHash": "75e79febe86b72f41619739bdc80e3dfd9d555c15fa9fb9fb792f5a32118eedc",
+  "clientHash": "8a64445421f08d9b05d8b4aeb8aa5b3c91b76a1359aea165bc1ed926df170573",
+  "personalDataIncluded": false
+}

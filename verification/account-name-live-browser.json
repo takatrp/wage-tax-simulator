@@ -1,0 +1,32 @@
+{
+  "checkedAt": "2026-10-20T14:03:20.656Z",
+  "url": "https://takatrp.github.io/wage-tax-simulator/",
+  "syntheticOnly": true,
+  "originalCsvUsed": false,
+  "before": {
+    "printVisible": true,
+    "prior": "34200",
+    "regular": "18000",
+    "selected": [
+      "スタッフ給与 未知-STAFF-X7 部門なしを集計",
+      "社員給与 未知-EMP-Y9 部門なしを集計"
+    ],
+    "tax540": true,
+    "taxLabel": true
+  },
+  "selectionInvalidation": {
+    "inputsHidden": true,
+    "oldResultCleared": true,
+    "printHidden": true
+  },
+  "afterExcludingEmployee": {
+    "prior": "11400",
+    "regular": "6000"
+  },
+  "version": {
+    "hasWeb9": true,
+    "sourceSnippet": "jp-corp-wage-2026.10.20-web.9\n適用範囲\n法人 / 両年度12か月 / 機能別に承認された開始日期間 / 組織再編・複雑な通算等を除く。固定依存資料の更新チェックであり法令全体の最新性保証ではありません。\n対象事業年度\n2026-04-01〜翌年の同月前日\n公式取得試行日時\n2026-10-20T14:01:29.705Z\n公式取得確認期限\n2026-10-20T14:16:29.705Z\n機能・依存資料\t限定照合と承認範囲\n中小企業の条件付き概算・年間給与見込\nnta-sme, nta-limits, nta-reform2024\t限定照合済み\n担当 AIによる独立税務・コードレビュー（経営判断用の条件付き概算、申告用監査ではない） / 2026-10-20T09:45:29.628Z\nレビュー更新期限（法的期限ではない） 2026-11-20T00:00:00Z\n開始日期間 2024-04-01〜2027-03-31\n中小基本計算・2024年度資格\nnta-sme, chusho-r6, nta-limits\t対象開始日の機能を未対応\n担当 未設定 / "
+  },
+  "consoleErrors": [],
+  "screenshot": "verification/account-name-live-ui.png"
+}

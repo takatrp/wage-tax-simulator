@@ -1,4 +1,31 @@
-# 現在の配備 — web.8（2026-10-20 11:52 UTC）
+# 現在の配備 — web.9（2026-10-20）
+
+公開ツール：https://takatrp.github.io/wage-tax-simulator/
+制度確認API：https://wage-tax-rule-check.takatrp0222.chatgpt.site
+
+名称から給与科目を候補選択し、チェックで追加・解除する修正版を公開しました。科目名・コード・部門・資料・当期/前年金額を表示します。曖昧な名称は未選択、追加時に通常給与/賞与の指定が必要です。役員・福利費・外注等は初期選択しません。
+
+全223テスト成功、独立レビュー10件成功。公開Chromeで「スタッフ給与」「社員給与」の未知コード初期選択、36行の架空CSVから当期18,000円・前年34,200円、社員給与を外すと6,000円・11,400円、旧結果/印刷失効を確認。公式照合後の年間見込36,000円・条件付き基本控除の目安540円（税額上限前）を確認しました。原本CSVのバイト互換性は未検証です。
+
+実装commit：79e5710fa99d01a1002a898344e5e82343ec8a47
+実装版：jp-corp-wage-2026.10.20-web.9
+コード指紋：75e79febe86b72f41619739bdc80e3dfd9d555c15fa9fb9fb792f5a32118eedc
+画面指紋：8a64445421f08d9b05d8b4aeb8aa5b3c91b76a1359aea165bc1ed926df170573
+API source：1088a921f642bdb699a0681c1ca9c3c794053724
+Sites保存版10：appgprj_6ad6e84462b88191af122b3b9a9869b0~appgver_3b03301202e081919b27e3045aad7b7d
+配備：appgdep_6ad77306bf448191b101a1ea6d9dc507（succeeded、2026-10-20T13:56:28.474241+00:00）
+
+13:58:23.986Zと13:58:24.236Zの空POSTで別ID・日時を確認。quickEstimate/smeR6/smeR8/forecastMethodの4機能が限定ready。Pages全26ソース・版・両指紋が承認版と一致。実画面もweb.9と公式取得試行日時14:01:29.705Zを確認。確認済みはその時点の結果で、利用時は毎回取得し直します。
+
+税額算式・出典の承認指紋・適用範囲・レビュー更新期限は不変です。変更疑い・取得失敗・期限切れ・未対応年度の停止を維持します。CSV原本・給与・社名・認証情報は公開物と確認APIに含めていません。検証CSVと画面の金額は全て架空です。
+
+以前の自動承認レビュー停止は、今回のチャットでの明示解除後に解消。公式パッケージャーは既存Git BashのPATHとTAR_OPTIONS=--force-localを当該プロセスだけ補い、ソース・コミット・ビルド・アーカイブのバイト一致を確認しました。公開作業の承認待ちはありません。
+
+証拠：verification/account-name-deployment.json、account-name-api-artifact.json、account-name-live-api.json、account-name-live-pages.json、account-name-live-browser.json、account-name-live-ui.png。
+
+---
+
+# web.8 配備記録（2026-10-20 11:52 UTC）
 
 公開ツール：https://takatrp.github.io/wage-tax-simulator/
 照合API：https://wage-tax-rule-check.takatrp0222.chatgpt.site
