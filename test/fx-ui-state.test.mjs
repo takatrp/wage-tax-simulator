@@ -1,3 +1,4 @@
+import * as overlap from '../public/journal-overlap.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -39,7 +40,7 @@ function harness(){
   elements.set(selector,node);return node;
  }
  const periods=['start','end','prevStart','prevEnd','cutoff'].map(key=>element('#fx-'+key));
- const context={...fx,decodeCsv(bytes,encoding){decodeCalls++;return decodeCsv(bytes,encoding);},
+ const context={...fx,...overlap,decodeCsv(bytes,encoding){decodeCalls++;return decodeCsv(bytes,encoding);},
   document:{querySelector:element,querySelectorAll:selector=>
    selector==='[data-fx-role]'?roles:selector==='[data-fx-account]'?accounts:
    selector==='[data-fx-period]'?periods:[]},

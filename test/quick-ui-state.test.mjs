@@ -1,3 +1,4 @@
+import * as overlap from '../public/journal-overlap.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -25,15 +26,15 @@ const source=readFileSync(new URL('../public/quick-ui.mjs',import.meta.url),'utf
 const keys=['start','through','regular','paidBonus','previousAnnual','futureBonus','adjustment','corporateTax'];
 const base={start:'2026-04',through:'2026-09',regular:'600000',paidBonus:'0',previousAnnual:'1000000',futureBonus:'',adjustment:'',corporateTax:''};
 function deferred(){let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return{promise,resolve,reject};}
-function file(text){const bytes=new TextEncoder().encode(text).buffer;return{size:bytes.byteLength,arrayBuffer:async()=>bytes};}
+function file(text,name='SYNTHETIC.csv'){const bytes=new TextEncoder().encode(text).buffer;return{name,size:bytes.byteLength,arrayBuffer:async()=>bytes};}
 
 function harness(){
- const nodes=new Map();let mapping=[],ready=true,refresher=async()=>true,onPrint=()=>{},prints=0,decoded=0;
+ const nodes=new Map();let mapping=[],included=[],ready=true,refresher=async()=>true,fingerprinter=overlap.fingerprintBytes,onPrint=()=>{},prints=0,decoded=0;
  const periods=[];
  function element(id){
   if(nodes.has(id))return nodes.get(id);
   let html='';const events=new Map();
-  const node={value:'',files:[],hidden:false,disabled:false,textContent:'',className:'',dataset:{},
+  const node={value:'',files:[],checked:false,hidden:false,disabled:false,textContent:'',className:'',dataset:{},
    querySelectorAll(selector){assert.equal(selector,'details');return [...html.matchAll(/<details\b/g)].map(()=>{
     const detail={setAttribute(name){assert.equal(name,'open');detail.open=true;}};
     Object.defineProperty(detail,'open',{set(open){if(open)html=html.replace(/<details(?![^>]*\bopen\b)([^>]*)>/,'<details$1 open>');}});return detail;
@@ -46,18 +47,21 @@ function harness(){
     const key='map-'+match[1];nodes.delete(key);const control=element(key);
     control.dataset.qMap=match[1];control.value=match[2].match(/<option value="([^"]+)" selected>/)?.[1]??'regular';return control;
    });
+   if(id==='#q-fileList')included=[...value.matchAll(/<input\b[^>]*data-q-include="(\d+)"[^>]*>/g)].map(match=>{
+    const key='include-'+match[1];nodes.delete(key);const control=element(key);control.dataset.qInclude=match[1];control.checked=/\bchecked\b/.test(match[0]);return control;
+   });
   }});
   nodes.set(id,node);return node;
  }
- const root={insertAdjacentHTML(){},querySelector:element,querySelectorAll:selector=>selector==='[data-q-map]'?mapping:[]};
- const context={...quick,readFxCloud,decodeCsv(bytes,encoding){decoded++;return decodeCsv(bytes,encoding);},root,
+ const root={insertAdjacentHTML(){},querySelector:element,querySelectorAll:selector=>selector==='[data-q-map]'?mapping:selector==='[data-q-include]'?included:[]};
+ const context={...quick,...overlap,readFxCloud,fingerprintBytes:bytes=>fingerprinter(bytes),decodeCsv(bytes,encoding){decoded++;return decodeCsv(bytes,encoding);},root,
   document:{querySelector:element},window:{print(){prints++;onPrint(context.api);}},
   callbacks:{root,refresh:()=>refresher(),isReady:()=>ready,onPeriod:start=>periods.push(start),
    getEvidence:()=>({checkedAt:'2026-10-20T00:00:00Z',expiresAt:'2026-10-20T00:15:00Z',ruleVersion:'SYNTHETIC',scope:'合成レビュー範囲',sources:[{title:'合成の公式出典',url:'https://www.nta.go.jp/'}]})}};
  vm.createContext(context);vm.runInContext(source+'\nglobalThis.api=mountQuick(callbacks);',context);
  element('#q-encoding').value='auto';element('#q-paidBonus').value='0';
  element('#q-inputs').hidden=true;element('#q-print').hidden=true;
- return{element,api:context.api,periods,decoded:()=>decoded,prints:()=>prints,mapping:()=>mapping,
+ return{element,api:context.api,periods,decoded:()=>decoded,prints:()=>prints,mapping:()=>mapping,included:()=>included,fingerprint:fn=>{fingerprinter=fn;},
   ready:value=>{ready=value;},refresh:fn=>{refresher=fn;},onPrint:fn=>{onPrint=fn;},
   async load(files){element('#q-files').files=files;await element('#q-files').dispatch('change');},
   event:(id,type='click')=>element(id).dispatch(type),
@@ -101,6 +105,58 @@ test('旧ファイル読込の失敗で、新しいCSVと集計状態を上書�
  ui.element('#q-start').value='2026-04';await ui.event('#q-analyze');assert.equal(ui.element('#q-regular').value,'1800000');
 });
 
+test('ハッシュ計算待ちの旧CSVは、新しい読込後に戻っても復号・表示しない',async()=>{
+ const ui=harness(),oldHash=deferred();let hashes=0;
+ ui.fingerprint(bytes=>++hashes===1?oldHash.promise:overlap.fingerprintBytes(bytes));
+ const pending=ui.load([file(journal({prefix:'OLD'}),'OLD.csv')]);await new Promise(resolve=>setImmediate(resolve));assert.equal(hashes,1);
+ await ui.load([file(journal({value:'200000',prefix:'NEW'}),'NEW.csv')]);const status=ui.element('#q-status').textContent;
+ oldHash.resolve('f'.repeat(64));await pending;
+ assert.equal(ui.decoded(),1);assert.equal(ui.element('#q-status').textContent,status);assert.match(ui.element('#q-fileList').innerHTML,/NEW\.csv/);assert.ok(!ui.element('#q-fileList').innerHTML.includes('OLD.csv'));
+ ui.element('#q-start').value='2026-04';await ui.event('#q-analyze');assert.equal(ui.element('#q-regular').value,'1200000');
+});
+
+test('単一CSV内の完全一致3行は全行を保持し、候補行数と給与額を表示して進む',async()=>{
+ const ui=harness(),copy=journalRow({伝票番号:'C001'});await ui.load([file(journal({extra:[copy,copy]}))]);
+ ui.element('#q-start').value='2026-04';await ui.event('#q-analyze');
+ assert.equal(ui.element('#q-inputs').hidden,false);assert.equal(ui.element('#q-overlap').hidden,true);assert.equal(ui.element('#q-regular').value,'800000');
+ assert.match(ui.element('#q-warnings').innerHTML,/一致する行が3行/);assert.match(ui.element('#q-warnings').innerHTML,/全行を保持/);assert.match(ui.element('#q-warnings').innerHTML,/当期300,000円/);
+ ui.element('#q-previousAnnual').value='1000000';await ui.event('#q-calculate');assert.match(ui.element('#q-result').innerHTML,/条件付き概算/);assert.equal(ui.api.snapshot().regular,'800000');
+ const saved=JSON.stringify(ui.api.snapshot());assert.ok(!saved.includes('byteHash')&&!saved.includes('transactions')&&!saved.includes('架空の支給'));
+});
+
+test('同一byteの別名ファイルは1回だけ集計し、採用元を除外すれば残りを採用する',async()=>{
+ const ui=harness(),text=journal();await ui.load([file(text,'FIRST.csv'),file(text,'COPY.csv')]);
+ assert.equal(ui.included().length,2);assert.ok(ui.included().every(el=>el.checked));ui.element('#q-start').value='2026-04';await ui.event('#q-analyze');
+ assert.equal(ui.element('#q-regular').value,'600000');assert.equal(ui.element('#q-overlap').hidden,true);assert.match(ui.element('#q-warnings').innerHTML,/同一ファイル/);assert.match(ui.element('#q-warnings').innerHTML,/1回分だけ/);
+ ui.included()[0].checked=false;await ui.included()[0].dispatch('change');assert.equal(ui.api.snapshot(),null);await ui.event('#q-analyze');
+ assert.equal(ui.element('#q-regular').value,'600000');assert.equal(ui.element('#q-inputs').hidden,false);assert.ok(!ui.element('#q-warnings').innerHTML.includes('同一ファイルの内容'));
+});
+
+test('同名でもbyteが違う重複期間CSVは明示確認まで集計額を保存せず、内容一致行を削除しない',async()=>{
+ const ui=harness(),text=journal();await ui.load([file(text,'SAME.csv'),file(text+'\r\n','SAME.csv')]);ui.element('#q-start').value='2026-04';await ui.event('#q-analyze');
+ assert.equal(ui.element('#q-inputs').hidden,true);assert.equal(ui.element('#q-overlap').hidden,false);assert.equal(ui.api.snapshot(),null);
+ assert.equal(ui.element('#q-regular').value,'');assert.equal(ui.element('#q-previousAnnual').value,'');assert.match(ui.element('#q-overlapText').innerHTML,/内容一致の疑いは6行/);assert.match(ui.element('#q-overlapText').innerHTML,/当期600,000円/);
+ await ui.event('#q-calculate');assert.equal(ui.element('#q-result').innerHTML,'');assert.equal(ui.api.snapshot(),null);
+ await ui.event('#q-confirmOverlap');assert.equal(ui.element('#q-inputs').hidden,false);assert.equal(ui.element('#q-regular').value,'1200000');assert.equal(ui.api.snapshot().regular,'1200000');assert.match(ui.element('#q-warnings').innerHTML,/別仕訳として全行含めることを確認/);
+});
+
+test('重複期間のCSV除外は再集計を要求し、再追加したら確認と旧結果を無効化する',async()=>{
+ const ui=harness();await ui.load([file(journal(),'A.csv'),file(journal({value:'200000',prefix:'B'}),'B.csv')]);ui.element('#q-start').value='2026-04';await ui.event('#q-analyze');
+ assert.equal(ui.element('#q-overlap').hidden,false);assert.match(ui.element('#q-overlapText').innerHTML,/内容一致の疑いは0行/);assert.match(ui.element('#q-overlapText').innerHTML,/当期1,200,000円/);
+ ui.included()[1].checked=false;await ui.included()[1].dispatch('change');assert.equal(ui.api.snapshot(),null);await ui.event('#q-confirmOverlap');assert.equal(ui.element('#q-inputs').hidden,true);
+ await ui.event('#q-analyze');assert.equal(ui.element('#q-inputs').hidden,false);assert.equal(ui.element('#q-regular').value,'600000');ui.element('#q-previousAnnual').value='1000000';await ui.event('#q-calculate');assert.notEqual(ui.element('#q-result').innerHTML,'');
+ ui.included()[1].checked=true;await ui.included()[1].dispatch('change');assert.equal(ui.element('#q-result').innerHTML,'');assert.equal(ui.element('#q-inputs').hidden,true);assert.equal(ui.api.snapshot(),null);
+ await ui.event('#q-analyze');assert.equal(ui.element('#q-overlap').hidden,false);assert.equal(ui.api.snapshot(),null);await ui.event('#q-confirmOverlap');assert.equal(ui.element('#q-regular').value,'1800000');
+});
+
+test('科目変更で重複期間の確認を無効にし、給与候補金額も新しい分類で再計算する',async()=>{
+ const ui=harness();await ui.load([file(journal(),'A.csv'),file(journal({value:'200000',prefix:'B'}),'B.csv')]);ui.element('#q-start').value='2026-04';await ui.event('#q-analyze');await ui.event('#q-confirmOverlap');
+ assert.equal(ui.element('#q-regular').value,'1800000');const regular=ui.mapping().find(el=>el.value==='regular');assert.ok(regular);regular.value='exclude';await regular.dispatch('change');
+ assert.equal(ui.element('#q-inputs').hidden,true);assert.equal(ui.api.snapshot(),null);await ui.event('#q-confirmOverlap');assert.equal(ui.element('#q-inputs').hidden,true);
+ await ui.event('#q-analyze');assert.equal(ui.element('#q-overlap').hidden,false);assert.match(ui.element('#q-overlapText').innerHTML,/給与候補の差引額（年換算前）：当期0円/);assert.equal(ui.api.snapshot(),null);
+ await ui.event('#q-confirmOverlap');assert.equal(ui.element('#q-inputs').hidden,false);assert.equal(ui.element('#q-regular').value,'');assert.match(ui.element('#q-warnings').innerHTML,/給与候補の差引額（年換算前）：当期0円/);
+});
+
 test('文字コード変更で取り消したファイルは復号も集計もしない',async()=>{
  const ui=harness(),old=deferred();const pending=ui.load([{size:1,arrayBuffer:()=>old.promise}]);
  ui.element('#q-encoding').value='shift_jis';await ui.event('#q-encoding','change');const status=ui.element('#q-status').textContent;
@@ -120,7 +176,8 @@ test('役員・曖昧科目を除外し、再分類のたびに再集計して�
 test('期間変更は税額と印刷を無効化し、期間矛盾を再集計で停止する',async()=>{
  const ui=harness();await prepare(ui);await ui.event('#q-calculate');assert.equal(ui.element('#q-print').hidden,false);
  ui.element('#q-through').value='2026-08';await ui.event('#q-through','input');
- assert.equal(ui.element('#q-result').innerHTML,'');assert.equal(ui.element('#q-print').hidden,true);assert.equal(ui.element('#q-inputs').hidden,true);
+ assert.equal(ui.element('#q-result').innerHTML,'');assert.equal(ui.element('#q-print').hidden,true);assert.equal(ui.element('#q-inputs').hidden,true);assert.equal(ui.api.snapshot(),null);
+ await ui.event('#q-calculate');assert.equal(ui.element('#q-result').innerHTML,'');assert.equal(ui.api.snapshot(),null);
  await ui.event('#q-analyze');assert.equal(ui.element('#q-inputs').hidden,true);assert.match(ui.element('#q-status').textContent,/期間外/);
 });
 
@@ -176,7 +233,7 @@ test('実appと実quickは進行中の公式確認を共有し、詳細と概算
  const document={hidden:false,querySelector:node,querySelectorAll:selector=>selector==='.nav'?nav:[],addEventListener(){}};
  const window={scrollTo(){},confirm:()=>true,addEventListener(type,handler){windowEvents.set(type,handler);},print(){windowEvents.get('beforeprint')?.();printed.push(node('#printArea').innerHTML);}};
  function response(){const now=Date.now();return{ok:true,json:async()=>({ruleVersion:rules.RULE_VERSION,codeHash:EXPECTED_CODE_HASH,clientHash:EXPECTED_CLIENT_HASH,checkedAt:new Date(now).toISOString(),expiresAt:new Date(now+600000).toISOString(),scope:'合成の公式確認',reasons:[],sources:rules.SOURCES.map(s=>({...s,ok:true,hash:'0'.repeat(64)})),features:Object.fromEntries(Object.entries(rules.FEATURES).map(([id,f])=>[id,{ready:true,coverage:{from:f.from,through:f.through},validUntil:new Date(now+86400000).toISOString(),reviewer:'合成レビュー'}]))})};}
- const context={...quick,...rules,...fields,...entry,...verification,readFxCloud,decodeCsv,certification,calculateCase,createCalculationHandler,EXPECTED_CODE_HASH,EXPECTED_CLIENT_HASH,sample,document,window,performance,AbortSignal,Blob,URL,console,
+ const context={...quick,...overlap,...rules,...fields,...entry,...verification,readFxCloud,decodeCsv,certification,calculateCase,createCalculationHandler,EXPECTED_CODE_HASH,EXPECTED_CLIENT_HASH,sample,document,window,performance,AbortSignal,Blob,URL,console,
   setInterval:handler=>intervals.push(handler),setTimeout(){},checkEndpoint:()=>'/api/check',verifyPublicSources:async()=>{},
   localStorage:{getItem:()=>null,setItem(){},removeItem(){}},
   fetch:async(url,options)=>{requests.push({url,options});return requests.length===1?first.promise:response();},

@@ -1,3 +1,4 @@
+import {inspectJournalOverlap,overlapWarnings} from './journal-overlap.mjs';
 import {parseCsv} from './csv.mjs';
 import {amount,annualPair} from './calc.mjs';
 import {validDate} from './rules.mjs';
@@ -35,22 +36,23 @@ export function readFxCloud(text){
 export function fxAccounts(files){const map=new Map();for(const file of files)if(!['support','ignore'].includes(file.role))for(const e of file.data.entries)if(!map.has(e.key))map.set(e.key,{key:e.key,code:e.code,name:e.name,suggestion:e.suggestion});return [...map.values()];}
 function monthList(start,end){const out=[],d=new Date(start+'T00:00:00Z');while(d.toISOString().slice(0,7)<=end.slice(0,7)&&out.length<13){out.push(d.toISOString().slice(0,7));d.setUTCMonth(d.getUTCMonth()+1);}return out;}
 function lastDay(month){const d=new Date(month+'-01T00:00:00Z');d.setUTCMonth(d.getUTCMonth()+1);d.setUTCDate(0);return d.toISOString().slice(0,10);}
+export function fxOverlap(files,period,mapping={}){return inspectJournalOverlap(files.flatMap((f,i)=>['support','ignore'].includes(f.role)?[]:[{...f.data,sourceFile:i+1}]),{period,mapping});}
 export function inspectFxFiles(files,options){
  const {start,end,prevStart,prevEnd,cutoff}=options;
  if(![start,end,prevStart,prevEnd].every(validDate)||!annualPair(start,end)||!annualPair(prevStart,prevEnd)||!start.endsWith('-01')||new Date(prevEnd+'T00:00:00Z').getTime()+86400000!==new Date(start+'T00:00:00Z').getTime())throw new Error('両年度は連続する12か月年度・月初開始で指定してください。');
  if(!/^\d{4}-\d{2}$/.test(cutoff??'')||!validDate(cutoff+'-01'))throw new Error('当期の最終完了月を指定してください。');
  const through=lastDay(cutoff);if(through<start||through>end)throw new Error('完了月は対象年度内にしてください。');
  if(!files.length||files.length>8)throw new Error('仕訳CSVは1〜8件で指定してください。');
- const required={current:monthList(start,through),previous:monthList(prevStart,prevEnd)},seen=new Map(),identities=new Set(),companyColumns=new Map(),accounts=new Map(),evidence=[],coverage={current:new Set(),previous:new Set()},issues=[],fileSummaries=[];
+ const required={current:monthList(start,through),previous:monthList(prevStart,prevEnd)},identities=new Set(),companyColumns=new Map(),accounts=new Map(),evidence=[],coverage={current:new Set(),previous:new Set()},issues=[],fileSummaries=[];
+ const {uniqueFiles:unusedFiles,...duplicateDiagnostics}=fxOverlap(files,required);const duplicateIds=new Set(duplicateDiagnostics.duplicateFiles.map(f=>f.file));const warnings=overlapWarnings(duplicateDiagnostics);
  for(let i=0;i<files.length;i++){
   const f=files[i],role=f.role??'auto';if(!['auto','current','previous','support','ignore'].includes(role))throw new Error('ファイルの用途を選択してください。');
-  if(role==='ignore'){fileSummaries.push({file:i+1,role,rows:f.data.rows});continue;}
+  if(role==='ignore'||duplicateIds.has(i+1)){fileSummaries.push({file:i+1,role,rows:f.data.rows});continue;}
   for(const identity of f.data.companies){const p=identity.indexOf(':'),h=identity.slice(0,p),v=identity.slice(p+1);if(!companyColumns.has(h))companyColumns.set(h,new Set());companyColumns.get(h).add(v);}
   for(const e of f.data.entries){if(accounts.has(e.code)&&accounts.get(e.code)!==e.name)issues.push(`資料${i+1}：同じ科目コードに異なる科目名があります。科目体系を確認してください。`);accounts.set(e.code,e.name);}
   if(role==='support'){fileSummaries.push({file:i+1,role,rows:f.data.rows,from:f.data.from,through:f.data.through});continue;}
   const periods=new Map();
   for(const t of f.data.transactions){
-   if(seen.has(t.identity))issues.push(`資料${i+1} ${t.line}行：資料${seen.get(t.identity).file} ${seen.get(t.identity).line}行と同じ仕訳です。重複候補を合算しません。`);else seen.set(t.identity,{file:i+1,line:t.line});
    const period=t.date>=start&&t.date<=through?'current':t.date>=prevStart&&t.date<=prevEnd?'previous':null;
    if(!period||role!=='auto'&&role!==period){issues.push(`資料${i+1} ${t.line}行：指定年度・完了月・ファイル用途と日付が一致しません。`);continue;}
    periods.set(t.line,period);coverage[period].add(t.date.slice(0,7));identities.add(period);
@@ -61,10 +63,11 @@ export function inspectFxFiles(files,options){
  for(const values of companyColumns.values())if(values.size>1)issues.push('異なる法人識別値が混在しています。同一法人として反映できません。');
  for(const period of ['current','previous']){const missing=required[period].filter(m=>!coverage[period].has(m));if(missing.length)issues.push((period==='current'?'当期':'前期通年')+'の仕訳月が不足しています：'+missing.join(' / '));}
  const modes=through===end?'actual':'forecast';
- return {options:{start,end,prevStart,prevEnd,cutoff},through,mode:modes,months:required.current.length,observedMonths:required.current.join('|'),coverage:Object.fromEntries(Object.entries(coverage).map(([k,v])=>[k,[...v].sort()])),evidence,fileSummaries,issues:[...new Set(issues)],canApply:issues.length===0,hasCompanyIdentity:companyColumns.size>0,accounts:fxAccounts(files)};
+ return {duplicateDiagnostics,warnings,options:{start,end,prevStart,prevEnd,cutoff},through,mode:modes,months:required.current.length,observedMonths:required.current.join('|'),coverage:Object.fromEntries(Object.entries(coverage).map(([k,v])=>[k,[...v].sort()])),evidence,fileSummaries,issues:[...new Set(issues)],canApply:issues.length===0,hasCompanyIdentity:companyColumns.size>0,accounts:fxAccounts(files)};
 }
 export function applyFxReview(inspection,review){
- if(!inspection.canApply)throw new Error('重複・期間・月の不足等を解消してから反映してください。');
+ if(!inspection.canApply)throw new Error('期間・月の不足等を解消してから反映してください。');
+ if(inspection.duplicateDiagnostics?.requiresConfirmation&&review.overlapConfirmed!==true)throw new Error('期間が重なるCSVを別仕訳として全行含めるか確認してください。不要な資料は用途から除外できます。');
  if(!review.company?.trim()||review.sameCompany!==true||review.complete!==true||review.payrollScope!==true||!review.basis?.trim())throw new Error('同一法人・完了月の網羅性・給与対象範囲と調整根拠を確認してください。');
  const totals={current:{regular:0n,bonus:0n},previous:{regular:0n,bonus:0n}};
  for(const a of inspection.accounts)if(!['regular','bonus','exclude','support'].includes(review.mapping?.[a.key]))throw new Error('すべての給与・賞与・補助金候補の科目区分を確認してください。');
@@ -80,7 +83,7 @@ export function applyFxReview(inspection,review){
  if(!inspection.evidence.some(e=>['regular','bonus'].includes(review.mapping[e.key])))throw new Error('給与に分類した仕訳がありません。0円を自動推定しません。');
  const o=inspection.options,out={mode:inspection.mode,start:o.start,end:o.end,prevStart:o.prevStart,prevEnd:o.prevEnd,company:review.company.trim(),grossCurrent:String(adjusted.current.regular+adjusted.current.bonus),grossPrevious:String(adjusted.previous.regular+adjusted.previous.bonus),payrollReviewed:'unknown',continuousReviewed:'unknown'};
  if(out.mode==='forecast')Object.assign(out,{grossCurrent:String(adjusted.current.regular),bonusSeparated:'yes',paidBonus:String(adjusted.current.bonus),completedMonths:String(inspection.months),observationStart:o.start,observationEnd:inspection.through,observedMonths:inspection.observedMonths,forecastCoverageComplete:'yes',forecastPreviousAnnual:'yes'});
- const lines=['FX仕訳取込：'+inspection.fileSummaries.length+'資料（原本・摘要等は保存なし）',`当期 ${o.start}〜${inspection.through} / 前期 ${o.prevStart}〜${o.prevEnd}`,`当期帳簿候補 通常${totals.current.regular}円・賞与${totals.current.bonus}円、調整後${adjusted.current.regular+adjusted.current.bonus}円`,`前期帳簿候補 通常${totals.previous.regular}円・賞与${totals.previous.bonus}円、調整後${adjusted.previous.regular+adjusted.previous.bonus}円`,'調整根拠：'+review.basis.trim()];
+ const lines=[...(inspection.warnings?.length?['内容一致の単一CSV行を保持。'+(inspection.duplicateDiagnostics.requiresConfirmation?'期間重複資料の全行取込を確認。':'')]:[]),'FX仕訳取込：'+inspection.fileSummaries.length+'資料（原本・摘要等は保存なし）',`当期 ${o.start}〜${inspection.through} / 前期 ${o.prevStart}〜${o.prevEnd}`,`当期帳簿候補 通常${totals.current.regular}円・賞与${totals.current.bonus}円、調整後${adjusted.current.regular+adjusted.current.bonus}円`,`前期帳簿候補 通常${totals.previous.regular}円・賞与${totals.previous.bonus}円、調整後${adjusted.previous.regular+adjusted.previous.bonus}円`,'調整根拠：'+review.basis.trim()];
  out.csvImportBasis=lines.join('\n').slice(0,500);
  return {input:out,totals:Object.fromEntries(Object.entries(totals).map(([p,v])=>[p,Object.fromEntries(Object.entries(v).map(([k,n])=>[k,String(n)]))])),adjusted:Object.fromEntries(Object.entries(adjusted).map(([p,v])=>[p,Object.fromEntries(Object.entries(v).map(([k,n])=>[k,String(n)]))])),basis:lines.join('\n')};
 }

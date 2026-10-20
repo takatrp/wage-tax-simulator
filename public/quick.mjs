@@ -1,3 +1,4 @@
+import {inspectJournalOverlap,overlapWarnings} from './journal-overlap.mjs';
 import {amount, MAX_AMOUNT, rateFor} from './calc.mjs';
 import {validDate, selectRules} from './rules.mjs';
 
@@ -18,11 +19,12 @@ export function quickPeriods(start, through) {
   return{start:start+'-01',end,through,months,current:Array.from({length:months},(_,i)=>monthAt(first+i)),previous:Array.from({length:12},(_,i)=>monthAt(first-12+i))};
 }
 export function analyzeQuick(files, {start,through,mapping={}}) {
-  const period=quickPeriods(start,through), errors=[], warnings=[], accounts=new Map(), seen=new Set(), companies=new Set();
+  const period=quickPeriods(start,through), errors=[], warnings=[], accounts=new Map(), companies=new Set();
+  const {uniqueFiles,...duplicateDiagnostics}=inspectJournalOverlap(files,{period,mapping});warnings.push(...overlapWarnings(duplicateDiagnostics));
   const rows=[];
-  for(const file of files){
+  for(const file of uniqueFiles){
     for(const company of file.companies||[])companies.add(company);
-    for(const t of file.transactions||[]){if(seen.has(t.identity))errors.push('同一内容の仕訳が重複しています。重複ファイルまたは行を取り除いてください。');seen.add(t.identity);if(![...period.current,...period.previous].includes(t.date.slice(0,7)))errors.push('対象期間外の仕訳があります。年度・入力済み月またはファイルを確認してください。');}
+    for(const t of file.transactions||[]){if(![...period.current,...period.previous].includes(t.date.slice(0,7)))errors.push('対象期間外の仕訳があります。年度・入力済み月またはファイルを確認してください。');}
     for(const e of file.entries){if(!accounts.has(e.key))accounts.set(e.key,{key:e.key,code:e.code,name:e.name,kind:mapping[e.key]??e.suggestion??'exclude'});rows.push(e);}
   }
   // Company labels can differ by field; conflicting values within the same identification field stop aggregation.
@@ -44,7 +46,7 @@ export function analyzeQuick(files, {start,through,mapping={}}) {
   if(!currentComplete)warnings.push('当期の通常給与を全入力月で確認できません。通常給与累計を補ってください。空欄は0円として扱いません。');
   if(!previousComplete)warnings.push('前年通年の通常給与を確認できません。前年通年給与を1つ入力してください。前年同期間額を通年額には使いません。');
   warnings.push('仕訳が各月にあることは全件収録の証明ではありません。選択月までの給与が入力済みであると仮定します。');
-  return{period,accounts:[...accounts.values()],errors:[...new Set(errors)],warnings:[...new Set(warnings)],currentRegular:currentComplete?String(total.current.regular):null,paidBonus:String(total.current.bonus),previousAnnual:previousComplete?String(total.previous.regular+total.previous.bonus):null};
+  return{period,duplicateDiagnostics,requiresOverlapConfirmation:duplicateDiagnostics.requiresConfirmation,accounts:[...accounts.values()],errors:[...new Set(errors)],warnings:[...new Set(warnings)],currentRegular:currentComplete?String(total.current.regular):null,paidBonus:String(total.current.bonus),previousAnnual:previousComplete?String(total.previous.regular+total.previous.bonus):null};
 }
 function signed(value,label){const s=String(value??'');if(!/^-?(0|[1-9]\d*)$/.test(s)||s==='-0')throw Error(`${label}は整数の円額で入力してください。`);const n=BigInt(s);if(n>MAX_AMOUNT||n< -MAX_AMOUNT)throw Error(`${label}が大きすぎます。`);return n;}
 export function estimateQuick(input){

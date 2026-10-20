@@ -1,0 +1,21 @@
+{
+  "reviewedAt": "2026-10-20T09:45:29.634Z",
+  "ruleVersion": "jp-corp-wage-2026.10.20-web.7",
+  "codeHash": "87df8f19d3e89d67980f89ca66e202036582ff642168dab26065727ac83fd001",
+  "clientHash": "8f86052eecea962a460da35fd3214ce655804ca69583048b1ec5203b3ec282d0",
+  "reviewers": [
+    "/root/quick_state_review",
+    "/root/quick_tax_review"
+  ],
+  "outcome": "独立レビューで未解決所見なし。行保持・コピー防止・重複範囲確認・保存/計算状態を回帰確認",
+  "sourceHashes": {
+    "public/journal-overlap.mjs": "4a175c416113a38c8fe001a42979e79b15db20e8d21bb3c1f7412f4a827d027a",
+    "public/quick.mjs": "be1f9beae3998135af3507f6a4a167f12ea378cad1d364adb2166455c72fe6e8",
+    "public/quick-ui.mjs": "00a40e1e12237058a42fe144cfd8be7a96f09e02a8aee56fd0f5defbb4184df7",
+    "public/fxcloud.mjs": "95a51fc6cd3d015769ff6bb52d721e2c1151b811db8ce6380ba8a878d3a145e4",
+    "public/fx-ui.mjs": "b1e0174c6f6421cb7f0880d519c89bc7fb9a1f9b3b2704a73dc2d73034ee4ef1"
+  },
+  "taxArithmeticUnchanged": true,
+  "originalCsvBytesVerified": false,
+  "sourceEvidence": "添付画面の正規read OCRと旧コードの内容一致停止。実データの原本バイト検証とは区別。"
+}
