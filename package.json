@@ -1,0 +1,15 @@
+{
+  "name": "wage-tax-lab",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "description": "法人向け賃上げ促進税制のローカル試算・レビュー用ツール",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test test/*.test.mjs",
+    "snapshot": "node scripts/capture-sources.mjs"
+  }
+}

@@ -1,0 +1,22 @@
+import {mkdir,writeFile,readdir,readFile} from 'node:fs/promises';
+import {spawnSync}from'node:child_process';
+import {fileURLToPath}from'node:url';import path from'node:path';
+import {template,AGG_FIELDS}from'../public/csv.mjs';import{sample}from'../test/fixtures.mjs';import{codeFingerprint}from'../server.mjs';
+const root=path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+const examples=path.join(root,'examples'),out=path.join(root,'output');await mkdir(examples,{recursive:true});await mkdir(out,{recursive:true});
+await writeFile(path.join(examples,'aggregate-template-utf8.csv'),template('aggregate'));
+await writeFile(path.join(examples,'employee-template-utf8.csv'),template('employee'));
+await writeFile(path.join(examples,'forecast-template-utf8.csv'),template('forecast'));
+const input=sample();await writeFile(path.join(examples,'aggregate-sample-utf8.csv'),'\uFEFF'+Object.values(AGG_FIELDS).join(',')+'\r\n'+Object.keys(AGG_FIELDS).map(k=>input[k]).join(',')+'\r\n');
+await writeFile(path.join(examples,'sample-input.json'),JSON.stringify({schema:1,savedAt:new Date().toISOString(),input},null,2));
+const forecast={...input,mode:'forecast',grossCurrent:'50000000',completedMonths:'6',observationStart:input.start,observationEnd:'2026-09-30',forecastCoverageComplete:'yes',forecastPreviousAnnual:'yes',bonusSeparated:'yes',paidBonus:'3000000',plannedBonus:'2000000',annualAdjustment:'-1000000',forecastAdjustmentBasis:'架空の通常給与と補塡なしの見込',forecastSubsidyBasis:'年間助成金見込0円',forecastTaxBasis:'架空の利益計画',forecastContinuousAssumed:'yes',forecastContinuousBasis:'全期間資格を満たす仮定'};
+await writeFile(path.join(examples,'forecast-sample-utf8.csv'),'\uFEFF'+Object.values(AGG_FIELDS).join(',')+'\r\n'+Object.keys(AGG_FIELDS).map(k=>forecast[k]??'').join(',')+'\r\n');
+await writeFile(path.join(examples,'forecast-input.json'),JSON.stringify({schema:1,savedAt:new Date().toISOString(),input:forecast},null,2));
+await writeFile(path.join(examples,'invalid-formula.csv'),'当期給与総額,前期給与総額\r\n=1+1,100000000\r\n');
+const testFiles=(await readdir(path.join(root,'test'))).filter(f=>f.endsWith('.test.mjs')).map(f=>path.join('test',f));
+const tests=spawnSync(process.execPath,['--test',...testFiles],{cwd:root,encoding:'utf8'});
+await writeFile(path.join(out,'test-report.txt'),tests.stdout+'\n'+tests.stderr);
+const files=await readdir(path.join(root,'public'));for(const file of files.filter(f=>f.endsWith('.mjs'))){const syntax=spawnSync(process.execPath,['--check',path.join('public',file)],{cwd:root,encoding:'utf8'});if(syntax.status!==0)throw new Error(syntax.stderr);}
+const manifest=JSON.parse(await readFile(path.join(root,'review-manifest.json'),'utf8')),approvedFeatureIds=Object.keys(manifest.features??{}).filter(id=>manifest.features[id].status==='approved');
+const summary={createdAt:new Date().toISOString(),node:process.version,testExitCode:tests.status,testFiles,codeHash:await codeFingerprint(),reviewStatus:approvedFeatureIds.length?'limited_plan':'pending',approvedFeatureIds,scope:'通常の内国法人・非受託/非通算/特殊法人なし。計画用に承認された機能・開始日だけ利用可。申告用監査保証ではない。',reviewUpdateDue:'2026-11-20T00:00:00Z（法的期限ではない）'};
+await writeFile(path.join(out,'verification.json'),JSON.stringify(summary,null,2));console.log(JSON.stringify(summary));console.log(tests.stdout.split('\n').slice(-10).join('\n'));if(tests.status!==0)process.exitCode=1;

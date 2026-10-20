@@ -1,0 +1,31 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {mkdtemp,readFile,writeFile,readdir} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import path from 'node:path';
+import {stagePublicRelease} from '../scripts/build-public.mjs';
+import {clientFingerprint} from '../server.mjs';
+import {CLIENT_SOURCE_FILES,sourceDigest} from '../public/integrity.mjs';
+const sourceDir=new URL('../public/',import.meta.url);
+test('Pages入口と全ESMを実装版ごとの固定ディレクトリへ揃え、照合本文も同じ版にする',async()=>{
+  const outputDir=await mkdtemp(path.join(tmpdir(),'wage-public-')),clientHash=await clientFingerprint(),codeHash='a'.repeat(64);
+  const r=await stagePublicRelease({sourceDir,outputDir,codeHash,clientHash}),base=path.join(outputDir,r.releasePath);
+  const entry=await readFile(path.join(outputDir,'index.html'),'utf8');
+  assert(entry.includes(`src="./releases/${codeHash}/app.mjs"`));
+  assert(entry.includes(`href="./releases/${codeHash}/style.css"`));
+  assert(!entry.includes('src="./app.mjs"'));
+  const texts=await Promise.all(CLIENT_SOURCE_FILES.map(f=>readFile(path.join(base,f),'utf8')));
+  assert.equal(await sourceDigest(CLIENT_SOURCE_FILES,texts),clientHash);
+  assert.match(await readFile(path.join(base,'app.mjs'),'utf8'),/from '\.\/calc\.mjs'/);
+  assert((await readdir(outputDir)).every(f=>['index.html','.nojekyll','releases'].includes(f)));
+  await stagePublicRelease({sourceDir,outputDir,codeHash,clientHash});
+  await stagePublicRelease({sourceDir,outputDir,codeHash:'b'.repeat(64),clientHash});
+  assert((await readFile(path.join(outputDir,'index.html'),'utf8')).includes('b'.repeat(64)));
+});
+test('同じ公開版の内容改変・未承認指紋を拒否する',async()=>{
+  const outputDir=await mkdtemp(path.join(tmpdir(),'wage-public-')),clientHash=await clientFingerprint(),codeHash='c'.repeat(64);
+  const r=await stagePublicRelease({sourceDir,outputDir,codeHash,clientHash});
+  await writeFile(path.join(outputDir,r.releasePath,'calc.mjs'),'modified');
+  await assert.rejects(()=>stagePublicRelease({sourceDir,outputDir,codeHash,clientHash}),/既存の公開版/);
+  await assert.rejects(()=>stagePublicRelease({sourceDir,outputDir,codeHash:'d'.repeat(64),clientHash:'e'.repeat(64)}),/承認指紋/);
+});

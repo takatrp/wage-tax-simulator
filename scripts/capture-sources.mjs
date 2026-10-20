@@ -1,0 +1,3 @@
+import {mkdir,writeFile} from 'node:fs/promises';import {checkOfficial} from '../lib/freshness.mjs';import{codeFingerprint}from'../server.mjs';import{RULE_VERSION}from'../public/rules.mjs';
+// A candidate capture never mutates review-manifest.json or promotes approval.
+const codeHash=await codeFingerprint();const r=await checkOfficial({manifest:{status:'pending',ruleVersion:RULE_VERSION,fingerprints:{}},codeHash});await mkdir(new URL('../runtime/',import.meta.url),{recursive:true});await writeFile(new URL('../runtime/candidate-snapshot.json',import.meta.url),JSON.stringify({...r,codeHash},null,2));console.log(JSON.stringify({checkedAt:r.checkedAt,ready:r.ready,sources:r.sources.map(s=>({id:s.id,ok:s.ok,error:s.error})),path:'runtime/candidate-snapshot.json'}));
