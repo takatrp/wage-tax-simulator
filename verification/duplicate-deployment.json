@@ -1,0 +1,26 @@
+{
+  "implementationCommit": "e2ca0c8c0275d0aa5edc9102bb48f96022bd912f",
+  "ruleVersion": "jp-corp-wage-2026.10.20-web.7",
+  "codeHash": "87df8f19d3e89d67980f89ca66e202036582ff642168dab26065727ac83fd001",
+  "clientHash": "8f86052eecea962a460da35fd3214ce655804ca69583048b1ec5203b3ec282d0",
+  "publicUrl": "https://takatrp.github.io/wage-tax-simulator/",
+  "apiUrl": "https://wage-tax-rule-check.takatrp0222.chatgpt.site/api/check",
+  "verifiedAt": "2026-10-20T09:48:26.126Z",
+  "apiCheckedAt": "2026-10-20T09:48:26.057Z",
+  "sourceFileCount": 20,
+  "testsPassed": 180,
+  "independentReview": "未解決指摘なし。単一CSV行保持、同一ファイル1回、複数CSVの明示確認、候補額・状態を確認。税額算式変更なし。",
+  "apiSavedVersion": 8,
+  "apiSavedVersionId": "appgprj_6ad6e84462b88191af122b3b9a9869b0~appgver_ec4d2ba825108191bd69c32c5e9f2758",
+  "apiSourceCommit": "00b848e029fd4e2968e2af100b213e9ca54d562a",
+  "apiDeploymentId": "appgdep_6ad738dc096c8191bfeaab7c777e2f58",
+  "apiDeploymentStatus": "succeeded",
+  "apiDeploymentAt": "2026-10-20T09:48:16.709773Z",
+  "workerArtifactBytes": 17633,
+  "artifactSourceBytesMatch": true,
+  "originalCsvBytesVerified": false,
+  "limitations": [
+    "提供実CSV原本のバイト単位の再現は未検証。添付画面の正規read OCRと合成CSVによる回帰を根拠にする。",
+    "実ブラウザの描画/印刷レイアウトは接続タイムアウトのため未検証。実ハンドラー結合テストと公開ソース照合は通過。"
+  ]
+}
