@@ -1,31 +1,46 @@
-# 公開状況 — 2026-10-20 UTC
+# 公開と本番確認 — 2026-10-20 UTC
 
-## 成功済み
+本番公開と検証は完了。承認待ち・実行中の配備はありません。対象は計画用に限定承認した中小基本計算と年間見込です。申告用の確定計算・監査保証ではありません。
 
-- 新規公開リポジトリ：https://github.com/takatrp/wage-tax-simulator
-- GitHub Pages：https://takatrp.github.io/wage-tax-simulator/
-- 初回GitHub commit：`1f5a998064335349b30c24afbc879df973ebb885`。Pages buildはbuilt。2026-10-20T04:29:19Zに入口・14ソース・JavaScript MIME・承認済み画面指紋の一致を実配信で確認。
-- 専用API：https://wage-tax-rule-check.takatrp0222.chatgpt.site
-- Sites project：`appgprj_6ad6e84462b88191af122b3b9a9869b0`、public。saved version：`appgprj_6ad6e84462b88191af122b3b9a9869b0~appgver_2ae643832e5c81919771aa394bcc8c72`。
-- 初回deployment：`appgdep_6ad6ed5236ec819185f3ea05f125b8b4`、succeeded、2026-10-20T04:26:00Z。source commit：`293e61f4721158fa02257ec7251fc46e228232b4`。
-- 実APIのhealth 200、Pages OriginのOPTIONS 204と資格情報を使わないCORS応答を確認。新規APIキー・OAuth・課金契約・既存ポータル変更なし。
+- 公開ツール：https://takatrp.github.io/wage-tax-simulator/
+- ソース：https://github.com/takatrp/wage-tax-simulator
+- 照合API：https://wage-tax-rule-check.takatrp0222.chatgpt.site
+- 確認した実装commit：95206679d2456927c25b8a94c78575b32ef38891
+- 実装版：jp-corp-wage-2026.10.20-web.4
+- 実装指紋：483908722340fe0b14a782d4c87a52b0e8064da5332e13ce330b669bd5e47f5c
+- 画面指紋：1619281bcf44e147467d0620c590562e958c3fe2b08e13e41e6e8cffb12f331e
 
-## 修正版の配備と検証
+## 現在の配備
 
-初回APIは配信基盤が空POSTを空ReadableStreamへ変換するため400で停止した。公開画面でも「要確認」と印刷disabledを確認。空本文をEOFまで検証する修正版を同じSiteへ配備した。
+Sites project：appgprj_6ad6e84462b88191af122b3b9a9869b0、public、version4。
+Saved version：appgprj_6ad6e84462b88191af122b3b9a9869b0~appgver_4d7a7d43b4e48191a5b7a2a3fec0c3d8。
+Deployment：appgdep_6ad6f4c99ac48191944a4ddb31b67aed、succeeded、2026-10-20T04:57:51Z。
+Source commit：7428d2d4ca5f79567a8fd318f21da7ecec0af0ca。
 
-- 現在のsaved version：`appgprj_6ad6e84462b88191af122b3b9a9869b0~appgver_2cb07f6081cc8191ae6ff504a3b27c6f`（version2）。
-- 現在のdeployment：`appgdep_6ad6f007dda88191964827a084e9507b`、succeeded、2026-10-20T04:37:33Z。
-- source commit：`e82c5fe6bb58d703afc9d9b1e478f5bf39dc25a6`。
+承認証拠の再提示で自動審査の停止を解消し、同じ公開先・同じ公開範囲で公式手順を完了しました。初回配備の空stream互換性、Workersのredirect:error未実装、no-storeとTTLの設定競合を修正済みです。転送先を追わず、取得失敗や不正本文を成功扱いする変更は行っていません。
 
-修正版は最終109テスト成功。独立したHTTP/鮮度レビューの関連36テストと、生成Workerの共有checkOfficial全出力一致も成功。P1/P2残なし。税務計算とCSV本体は限定版3から不変で、既存3機能の限定承認を維持。
+## 実環境の証拠
 
-- 最終ローカル実装指紋：`5dba6d22d41302ac01a018f2f0eec9dbd11f69e7e61f6e46fd26e7965da1cc5e`
-- 画面指紋：`1619281bcf44e147467d0620c590562e958c3fe2b08e13e41e6e8cffb12f331e`
-- 初回公開版の実装指紋：`cd87d9a9f392a78dbd1ecec866583663d927f76e01e683d25e99f134634e39c8`
+2026-10-20T04:58:09Zの空POSTを2回実行し、確認ID・確認日時が毎回更新。7/11公式資料を取得し、承認済みの国税庁3資料の指紋が一致。smeR6・smeR8・forecastMethodのみ有効。経産省等4資料はHTTP403で、関連未承認機能を解除していません。
 
-修正版の公式Sitesヘルパー起動は一度自動承認レビューに拒否されたが、同じSiteへの修正再配備を含む承認証拠の再提示後、一度の再試行で成功した。別ルートへの回避や公開範囲の拡大は行っていない。
+health 200、Pages OriginのOPTIONS 204、CORS資格情報なし、no-store、不正Origin403、非空本文400、任意URL query404を実確認。給与・社名・CSV・対象年度は確認APIへ送りません。
 
-実APIの空POST・公式指紋の再確認、最終Pages成果物のpush、実画面のCSV・試算・印刷を検証中。Sitesのpublic・対象ID・同じ実URLを再配備前に読み取りで確認した。
+2026-10-20T04:58:23ZにPagesの入口・14ソース・JavaScript MIME・画面指紋・実装指紋を実配信で確認しました。全ESMとCSSは同じ実装指紋のreleaseディレクトリに固定。旧版の混在や新旧API不一致は停止します。
 
-ローカルの証跡はoutput/verification.json（109件）、output/test-report.txt、output/live-pages.json。output/runtimeには給与データを置いておらず、GitHubにも含めない。
+Chrome実画面で以下を確認しました。
+
+- 自作の架空UTF-8集計CSVを実ファイル選択で読込。1行・25列をマッピングし、当期給与103,000,000円・前期100,000,000円・法人税2,000,000円を反映。法人資格はunknownに初期化し、ファイル選択値とマッピングを消去。
+- 通年実績：控除率30%、理論900,000円、当期400,000円、当期未控除500,000円。
+- 年間見込：通常給与累計50,000,000円÷6月×12月＋既払い賞与3,000,000円＋予定賞与2,000,000円−補正1,000,000円＝104,000,000円。理論1,200,000円、当期400,000円、当期未控除800,000円。
+- 印刷サマリーDOMに金額・式・仮定・根拠・公式出典・確認日時・機能レビューを生成。実際の紙出力やプリンタ設定の検証ではありません。
+- 入力変更で旧印刷を消去。保存入力の復元は旧結果を戻さず公式情報を再取得。通常の内国法人条件unknownでは金額表示・印刷を停止。検証用の端末保存は削除済み。
+
+## テスト・適用範囲
+
+全110テスト成功。独立レビューでは税務計算・CSV・入力条件・workflowが限定版3と同じことを確認。公開・鮮度境界は旧cache混在、空stream、異常本文、転送非追従、no-store方式を独立検証しP1/P2残なし。最後のno-store変更は関連28件成功と3空POST・33固定GETの独立fixtureで確認。
+
+smeR6は2025-04-01〜2026-03-31開始、smeR8は2026-04-01〜2027-03-31開始、forecastMethodは2025-04-01〜2027-03-31開始。通常の内国法人・非受託・非通算・特殊法人なし、認定加算なし、既存繰越0円、旧年度の教育加算なしに限定します。2024年度・中堅・全企業・加算・繰越利用は未承認です。
+
+レビュー更新期限2026-11-20は法的な制度有効期限ではありません。指紋一致は別ページの改正告知や法令全体の網羅性を保証しません。申告別表の法定端数・例外・他制度配分は別途確認が必要です。新規APIキー・OAuth・課金契約・既存ポータル変更はありません。Sitesの将来の利用枠・運用担当・レビュー更新担当は継続管理が必要です。
+
+verification/のJSONとtest-report.txtは今回の過去の検証記録です。利用時の最新確認証明には使いません。アプリは毎回公開APIから取得し直します。

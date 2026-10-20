@@ -1,0 +1,834 @@
+{
+  "checkedAt": "2026-10-20T04:58:09.217Z",
+  "api": "https://wage-tax-rule-check.takatrp0222.chatgpt.site",
+  "health": {
+    "service": "official-rule-check-only",
+    "ruleVersion": "jp-corp-wage-2026.10.20-web.4",
+    "codeHash": "483908722340fe0b14a782d4c87a52b0e8064da5332e13ce330b669bd5e47f5c",
+    "payrollAccepted": false
+  },
+  "corsOrigin": "https://takatrp.github.io",
+  "credentials": false,
+  "checks": [
+    {
+      "checkedAt": "2026-10-20T04:58:09.025Z",
+      "expiresAt": "2026-10-20T05:13:09.025Z",
+      "ruleVersion": "jp-corp-wage-2026.10.20-web.4",
+      "codeHash": "483908722340fe0b14a782d4c87a52b0e8064da5332e13ce330b669bd5e47f5c",
+      "clientHash": "1619281bcf44e147467d0620c590562e958c3fe2b08e13e41e6e8cffb12f331e",
+      "scope": "法人 / 両年度12か月 / 機能別に承認された開始日期間 / 組織再編・複雑な通算等を除く。固定依存資料の更新チェックであり法令全体の最新性保証ではありません。",
+      "reviewStatus": "partially_approved",
+      "sources": [
+        {
+          "id": "nta-sme",
+          "title": "国税庁 No.5927-2（中小企業者等）",
+          "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/hojin/5927-2.htm",
+          "ok": true,
+          "hash": "77b8fea1033a7bf32193665da092472636a2c9b523026b523ad6220071006bbb",
+          "bytes": 27052,
+          "normalization": "html-main-text-v1"
+        },
+        {
+          "id": "nta-mid",
+          "title": "国税庁 No.5927-3（中堅企業）",
+          "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/hojin/5927-3.htm",
+          "ok": true,
+          "hash": "e52947315d215d8f281c243413165ffae43ece086bf437567cd2bb6e3f472c55",
+          "bytes": 28275,
+          "normalization": "html-main-text-v1"
+        },
+        {
+          "id": "nta-all",
+          "title": "国税庁 No.5927（全企業）",
+          "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/hojin/5927.htm",
+          "ok": true,
+          "hash": "5f3591e2199105b75727e05684f56ea07c92648c7436acd9957e7ee0ab37b582",
+          "bytes": 26891,
+          "normalization": "html-main-text-v1"
+        },
+        {
+          "id": "nta-size",
+          "title": "国税庁 No.5432（中小企業者の定義）",
+          "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/hojin/5432.htm",
+          "ok": true,
+          "hash": "d59e06baf4038cfd46a64923924df54b072bc2e7fd1fb898428ac70820fb0e90",
+          "bytes": 30048,
+          "normalization": "html-main-text-v1"
+        },
+        {
+          "id": "nta-limits",
+          "title": "国税庁 No.5450（特別税額控除の制限）",
+          "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/hojin/5450.htm",
+          "ok": true,
+          "hash": "b9e10b4ba3f2e7b96b12979722e0f081b112c9980d8fe6f3173177cccf98e5c0",
+          "bytes": 19447,
+          "normalization": "html-main-text-v1"
+        },
+        {
+          "id": "meti",
+          "title": "経済産業省 賃上げ促進税制（制度・改正情報）",
+          "url": "https://www.meti.go.jp/policy/economy/jinzai/syotokukakudaisokushin/syotokukakudai.html",
+          "ok": false,
+          "error": "HTTP 403"
+        },
+        {
+          "id": "chusho",
+          "title": "中小企業庁 賃上げ促進税制（制度・ガイドブック）",
+          "url": "https://www.chusho.meti.go.jp/zaimu/zeisei/syotokukakudai.html",
+          "ok": false,
+          "error": "HTTP 403"
+        },
+        {
+          "id": "chusho-r6",
+          "title": "中小企業庁 令和6年度開始用の歴史資料（2024年資格の検証用）",
+          "url": "https://www.chusho.meti.go.jp/zaimu/zeisei/syotokukakudai_r06.html",
+          "ok": false,
+          "error": "HTTP 403"
+        },
+        {
+          "id": "nta-return-sme",
+          "title": "国税庁 2026年 別表六(24)（当期・繰越控除の順序）",
+          "url": "https://www.nta.go.jp/taxes/tetsuzuki/shinsei/annai/hojin/shinkoku/itiran2026/pdf/06(24).pdf",
+          "ok": true,
+          "hash": "f74898fd5d71ee91e77b28d85bcae8f2f4412dd9e2a2401c7643e265c477319f",
+          "bytes": 975298,
+          "normalization": "pdf-bytes-v1"
+        },
+        {
+          "id": "nta-reform2024",
+          "title": "国税庁 令和6年度法人税改正の概要（中小繰越と他の賃上げ枠の併用）",
+          "url": "https://www.nta.go.jp/publication/pamph/hojin/kaisei_gaiyo2024/pdf/D.pdf",
+          "ok": true,
+          "hash": "a36a948ef1c8ae9ff7c2014a3c50d48ce3bc65fc8e73d28ca0733efcb8b46bdf",
+          "bytes": 515329,
+          "normalization": "pdf-bytes-v1"
+        },
+        {
+          "id": "meti-guide",
+          "title": "経済産業省 ガイドブック（令和8年6月15日公表版・確認対象）",
+          "url": "https://www.meti.go.jp/policy/economy/jinzai/syotokukakudaisokushin/pdf/gaidobook08_03.pdf",
+          "ok": false,
+          "error": "HTTP 403"
+        }
+      ],
+      "ready": true,
+      "features": {
+        "smeR6Early": {
+          "ready": false,
+          "reasons": [
+            "この機能の必須公式資料が未取得・取得失敗",
+            "この機能の税務ルールは独立レビュー待ち",
+            "レビュー済みルールの有効期限切れ・未設定",
+            "レビューの適用開始日範囲が未設定・範囲外",
+            "nta-sme：レビュー済み本文指紋なし",
+            "nta-limits：レビュー済み本文指紋なし"
+          ],
+          "title": "中小基本計算・2024年度資格",
+          "kind": "basic",
+          "dependencies": [
+            "nta-sme",
+            "chusho-r6",
+            "nta-limits"
+          ],
+          "coverage": null,
+          "reviewStatus": "pending",
+          "reviewer": null,
+          "reviewedAt": null,
+          "validUntil": null
+        },
+        "smeR6": {
+          "ready": true,
+          "reasons": [],
+          "title": "中小基本計算・2025年度資格",
+          "kind": "basic",
+          "dependencies": [
+            "nta-sme",
+            "nta-size",
+            "nta-limits"
+          ],
+          "coverage": {
+            "from": "2025-04-01",
+            "through": "2026-03-31"
+          },
+          "reviewStatus": "approved",
+          "reviewer": "AIによる独立コード・公表資料照合（申告用監査ではない）",
+          "reviewedAt": "2026-10-20T04:40:08Z",
+          "validUntil": "2026-11-20T00:00:00Z"
+        },
+        "smeR8": {
+          "ready": true,
+          "reasons": [],
+          "title": "中小基本計算・令和8年度",
+          "kind": "basic",
+          "dependencies": [
+            "nta-sme",
+            "nta-size",
+            "nta-limits"
+          ],
+          "coverage": {
+            "from": "2026-04-01",
+            "through": "2027-03-31"
+          },
+          "reviewStatus": "approved",
+          "reviewer": "AIによる独立コード・公表資料照合（申告用監査ではない）",
+          "reviewedAt": "2026-10-20T04:40:08Z",
+          "validUntil": "2026-11-20T00:00:00Z"
+        },
+        "midR6": {
+          "ready": false,
+          "reasons": [
+            "この機能の税務ルールは独立レビュー待ち",
+            "レビュー済みルールの有効期限切れ・未設定",
+            "レビューの適用開始日範囲が未設定・範囲外",
+            "nta-mid：レビュー済み本文指紋なし",
+            "nta-limits：レビュー済み本文指紋なし"
+          ],
+          "title": "中堅基本計算・令和6年度改正",
+          "kind": "basic",
+          "dependencies": [
+            "nta-mid",
+            "nta-limits"
+          ],
+          "coverage": null,
+          "reviewStatus": "pending",
+          "reviewer": null,
+          "reviewedAt": null,
+          "validUntil": null
+        },
+        "midR8": {
+          "ready": false,
+          "reasons": [
+            "この機能の税務ルールは独立レビュー待ち",
+            "レビュー済みルールの有効期限切れ・未設定",
+            "レビューの適用開始日範囲が未設定・範囲外",
+            "nta-mid：レビュー済み本文指紋なし",
+            "nta-limits：レビュー済み本文指紋なし"
+          ],
+          "title": "中堅基本計算・令和8年度改正",
+          "kind": "basic",
+          "dependencies": [
+            "nta-mid",
+            "nta-limits"
+          ],
+          "coverage": null,
+          "reviewStatus": "pending",
+          "reviewer": null,
+          "reviewedAt": null,
+          "validUntil": null
+        },
+        "allR6": {
+          "ready": false,
+          "reasons": [
+            "この機能の税務ルールは独立レビュー待ち",
+            "レビュー済みルールの有効期限切れ・未設定",
+            "レビューの適用開始日範囲が未設定・範囲外",
+            "nta-all：レビュー済み本文指紋なし",
+            "nta-limits：レビュー済み本文指紋なし"
+          ],
+          "title": "全企業基本計算・令和6年度改正",
+          "kind": "basic",
+          "dependencies": [
+            "nta-all",
+            "nta-limits"
+          ],
+          "coverage": null,
+          "reviewStatus": "pending",
+          "reviewer": null,
+          "reviewedAt": null,
+          "validUntil": null
+        },
+        "trainingSme": {
+          "ready": false,
+          "reasons": [
+            "この機能の必須公式資料が未取得・取得失敗",
+            "この機能の税務ルールは独立レビュー待ち",
+            "レビュー済みルールの有効期限切れ・未設定",
+            "レビューの適用開始日範囲が未設定・範囲外",
+            "nta-sme：レビュー済み本文指紋なし"
+          ],
+          "title": "中小の教育訓練費上乗せ",
+          "kind": "additional",
+          "dependencies": [
+            "nta-sme",
+            "chusho-r6"
+          ],
+          "coverage": null,
+          "reviewStatus": "pending",
+          "reviewer": null,
+          "reviewedAt": null,
+          "validUntil": null
+        },
+        "trainingMid": {
+          "ready": false,
+          "reasons": [
+            "この機能の必須公式資料が未取得・取得失敗",
+            "この機能の税務ルールは独立レビュー待ち",
+            "レビュー済みルールの有効期限切れ・未設定",
+            "レビューの適用開始日範囲が未設定・範囲外",
+            "nta-mid：レビュー済み本文指紋なし"
+          ],
+          "title": "中堅の教育訓練費上乗せ",
+          "kind": "additional",
+          "dependencies": [
+            "nta-mid",
+            "meti-guide"
+          ],
+          "coverage": null,
+          "reviewStatus": "pending",
+          "reviewer": null,
+          "reviewedAt": null,
+          "validUntil": null
+        },
+        "trainingAll": {
+          "ready": false,
+          "reasons": [
+            "この機能の必須公式資料が未取得・取得失敗",
+            "この機能の税務ルールは独立レビュー待ち",
+            "レビュー済みルールの有効期限切れ・未設定",
+            "レビューの適用開始日範囲が未設定・範囲外",
+            "nta-all：レビュー済み本文指紋なし"
+          ],
+          "title": "全企業の教育訓練費上乗せ",
+          "kind": "additional",
+          "dependencies": [
+            "nta-all",
+            "meti-guide"
+          ],
+          "coverage": null,
+          "reviewStatus": "pending",
+          "reviewer": null,
+          "reviewedAt": null,
+          "validUntil": null
+        },
+        "certSme": {
+          "ready": false,
+          "reasons": [
+            "この機能の必須公式資料が未取得・取得失敗",
+            "この機能の税務ルールは独立レビュー待ち",
+            "レビュー済みルールの有効期限切れ・未設定",
+            "レビューの適用開始日範囲が未設定・範囲外",
+            "nta-sme：レビュー済み本文指紋なし"
+          ],
+          "title": "中小の認定上乗せ",
+          "kind": "additional",
+          "dependencies": [
+            "nta-sme",
+            "chusho-r6",
+            "chusho"
+          ],
+          "coverage": null,
+          "reviewStatus": "pending",
+          "reviewer": null,
+          "reviewedAt": null,
+          "validUntil": null
+        },
+        "certMid": {
+          "ready": false,
+          "reasons": [
+            "この機能の必須公式資料が未取得・取得失敗",
+            "この機能の税務ルールは独立レビュー待ち",
+            "レビュー済みルールの有効期限切れ・未設定",
+            "レビューの適用開始日範囲が未設定・範囲外",
+            "nta-mid：レビュー済み本文指紋なし"
+          ],
+          "title": "中堅の認定上乗せ",
+          "kind": "additional",
+          "dependencies": [
+            "nta-mid",
+            "meti-guide"
+          ],
+          "coverage": null,
+          "reviewStatus": "pending",
+          "reviewer": null,
+          "reviewedAt": null,
+          "validUntil": null
+        },
+        "certAll": {
+          "ready": false,
+          "reasons": [
+            "この機能の必須公式資料が未取得・取得失敗",
+            "この機能の税務ルールは独立レビュー待ち",
+            "レビュー済みルールの有効期限切れ・未設定",
+            "レビューの適用開始日範囲が未設定・範囲外",
+            "nta-all：レビュー済み本文指紋なし"
+          ],
+          "title": "全企業の認定上乗せ",
+          "kind": "additional",
+          "dependencies": [
+            "nta-all",
+            "meti-guide"
+          ],
+          "coverage": null,
+          "reviewStatus": "pending",
+          "reviewer": null,
+          "reviewedAt": null,
+          "validUntil": null
+        },
+        "carrySme": {
+          "ready": false,
+          "reasons": [
+            "この機能の税務ルールは独立レビュー待ち",
+            "レビュー済みルールの有効期限切れ・未設定",
+            "レビューの適用開始日範囲が未設定・範囲外",
+            "nta-sme：レビュー済み本文指紋なし",
+            "nta-limits：レビュー済み本文指紋なし",
+            "nta-return-sme：レビュー済み本文指紋なし",
+            "nta-reform2024：レビュー済み本文指紋なし"
+          ],
+          "title": "確認済み既存繰越残高の利用",
+          "kind": "additional",
+          "dependencies": [
+            "nta-sme",
+            "nta-limits",
+            "nta-return-sme",
+            "nta-reform2024"
+          ],
+          "coverage": null,
+          "reviewStatus": "pending",
+          "reviewer": null,
+          "reviewedAt": null,
+          "validUntil": null
+        },
+        "forecastMethod": {
+          "ready": true,
+          "reasons": [],
+          "title": "着地予測の換算方法・仮定表示",
+          "kind": "additional",
+          "dependencies": [],
+          "coverage": {
+            "from": "2025-04-01",
+            "through": "2027-03-31"
+          },
+          "reviewStatus": "approved",
+          "reviewer": "AIによる独立コード・公表資料照合（申告用監査ではない）",
+          "reviewedAt": "2026-10-20T04:40:08Z",
+          "validUntil": "2026-11-20T00:00:00Z"
+        }
+      },
+      "readyFeatureIds": [
+        "smeR6",
+        "smeR8",
+        "forecastMethod"
+      ],
+      "reasons": [],
+      "checkId": "627af6ec-4f01-4d79-b688-bda4cbbaabca"
+    },
+    {
+      "checkedAt": "2026-10-20T04:58:09.434Z",
+      "expiresAt": "2026-10-20T05:13:09.434Z",
+      "ruleVersion": "jp-corp-wage-2026.10.20-web.4",
+      "codeHash": "483908722340fe0b14a782d4c87a52b0e8064da5332e13ce330b669bd5e47f5c",
+      "clientHash": "1619281bcf44e147467d0620c590562e958c3fe2b08e13e41e6e8cffb12f331e",
+      "scope": "法人 / 両年度12か月 / 機能別に承認された開始日期間 / 組織再編・複雑な通算等を除く。固定依存資料の更新チェックであり法令全体の最新性保証ではありません。",
+      "reviewStatus": "partially_approved",
+      "sources": [
+        {
+          "id": "nta-sme",
+          "title": "国税庁 No.5927-2（中小企業者等）",
+          "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/hojin/5927-2.htm",
+          "ok": true,
+          "hash": "77b8fea1033a7bf32193665da092472636a2c9b523026b523ad6220071006bbb",
+          "bytes": 27052,
+          "normalization": "html-main-text-v1"
+        },
+        {
+          "id": "nta-mid",
+          "title": "国税庁 No.5927-3（中堅企業）",
+          "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/hojin/5927-3.htm",
+          "ok": true,
+          "hash": "e52947315d215d8f281c243413165ffae43ece086bf437567cd2bb6e3f472c55",
+          "bytes": 28275,
+          "normalization": "html-main-text-v1"
+        },
+        {
+          "id": "nta-all",
+          "title": "国税庁 No.5927（全企業）",
+          "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/hojin/5927.htm",
+          "ok": true,
+          "hash": "5f3591e2199105b75727e05684f56ea07c92648c7436acd9957e7ee0ab37b582",
+          "bytes": 26891,
+          "normalization": "html-main-text-v1"
+        },
+        {
+          "id": "nta-size",
+          "title": "国税庁 No.5432（中小企業者の定義）",
+          "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/hojin/5432.htm",
+          "ok": true,
+          "hash": "d59e06baf4038cfd46a64923924df54b072bc2e7fd1fb898428ac70820fb0e90",
+          "bytes": 30048,
+          "normalization": "html-main-text-v1"
+        },
+        {
+          "id": "nta-limits",
+          "title": "国税庁 No.5450（特別税額控除の制限）",
+          "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/hojin/5450.htm",
+          "ok": true,
+          "hash": "b9e10b4ba3f2e7b96b12979722e0f081b112c9980d8fe6f3173177cccf98e5c0",
+          "bytes": 19447,
+          "normalization": "html-main-text-v1"
+        },
+        {
+          "id": "meti",
+          "title": "経済産業省 賃上げ促進税制（制度・改正情報）",
+          "url": "https://www.meti.go.jp/policy/economy/jinzai/syotokukakudaisokushin/syotokukakudai.html",
+          "ok": false,
+          "error": "HTTP 403"
+        },
+        {
+          "id": "chusho",
+          "title": "中小企業庁 賃上げ促進税制（制度・ガイドブック）",
+          "url": "https://www.chusho.meti.go.jp/zaimu/zeisei/syotokukakudai.html",
+          "ok": false,
+          "error": "HTTP 403"
+        },
+        {
+          "id": "chusho-r6",
+          "title": "中小企業庁 令和6年度開始用の歴史資料（2024年資格の検証用）",
+          "url": "https://www.chusho.meti.go.jp/zaimu/zeisei/syotokukakudai_r06.html",
+          "ok": false,
+          "error": "HTTP 403"
+        },
+        {
+          "id": "nta-return-sme",
+          "title": "国税庁 2026年 別表六(24)（当期・繰越控除の順序）",
+          "url": "https://www.nta.go.jp/taxes/tetsuzuki/shinsei/annai/hojin/shinkoku/itiran2026/pdf/06(24).pdf",
+          "ok": true,
+          "hash": "f74898fd5d71ee91e77b28d85bcae8f2f4412dd9e2a2401c7643e265c477319f",
+          "bytes": 975298,
+          "normalization": "pdf-bytes-v1"
+        },
+        {
+          "id": "nta-reform2024",
+          "title": "国税庁 令和6年度法人税改正の概要（中小繰越と他の賃上げ枠の併用）",
+          "url": "https://www.nta.go.jp/publication/pamph/hojin/kaisei_gaiyo2024/pdf/D.pdf",
+          "ok": true,
+          "hash": "a36a948ef1c8ae9ff7c2014a3c50d48ce3bc65fc8e73d28ca0733efcb8b46bdf",
+          "bytes": 515329,
+          "normalization": "pdf-bytes-v1"
+        },
+        {
+          "id": "meti-guide",
+          "title": "経済産業省 ガイドブック（令和8年6月15日公表版・確認対象）",
+          "url": "https://www.meti.go.jp/policy/economy/jinzai/syotokukakudaisokushin/pdf/gaidobook08_03.pdf",
+          "ok": false,
+          "error": "HTTP 403"
+        }
+      ],
+      "ready": true,
+      "features": {
+        "smeR6Early": {
+          "ready": false,
+          "reasons": [
+            "この機能の必須公式資料が未取得・取得失敗",
+            "この機能の税務ルールは独立レビュー待ち",
+            "レビュー済みルールの有効期限切れ・未設定",
+            "レビューの適用開始日範囲が未設定・範囲外",
+            "nta-sme：レビュー済み本文指紋なし",
+            "nta-limits：レビュー済み本文指紋なし"
+          ],
+          "title": "中小基本計算・2024年度資格",
+          "kind": "basic",
+          "dependencies": [
+            "nta-sme",
+            "chusho-r6",
+            "nta-limits"
+          ],
+          "coverage": null,
+          "reviewStatus": "pending",
+          "reviewer": null,
+          "reviewedAt": null,
+          "validUntil": null
+        },
+        "smeR6": {
+          "ready": true,
+          "reasons": [],
+          "title": "中小基本計算・2025年度資格",
+          "kind": "basic",
+          "dependencies": [
+            "nta-sme",
+            "nta-size",
+            "nta-limits"
+          ],
+          "coverage": {
+            "from": "2025-04-01",
+            "through": "2026-03-31"
+          },
+          "reviewStatus": "approved",
+          "reviewer": "AIによる独立コード・公表資料照合（申告用監査ではない）",
+          "reviewedAt": "2026-10-20T04:40:08Z",
+          "validUntil": "2026-11-20T00:00:00Z"
+        },
+        "smeR8": {
+          "ready": true,
+          "reasons": [],
+          "title": "中小基本計算・令和8年度",
+          "kind": "basic",
+          "dependencies": [
+            "nta-sme",
+            "nta-size",
+            "nta-limits"
+          ],
+          "coverage": {
+            "from": "2026-04-01",
+            "through": "2027-03-31"
+          },
+          "reviewStatus": "approved",
+          "reviewer": "AIによる独立コード・公表資料照合（申告用監査ではない）",
+          "reviewedAt": "2026-10-20T04:40:08Z",
+          "validUntil": "2026-11-20T00:00:00Z"
+        },
+        "midR6": {
+          "ready": false,
+          "reasons": [
+            "この機能の税務ルールは独立レビュー待ち",
+            "レビュー済みルールの有効期限切れ・未設定",
+            "レビューの適用開始日範囲が未設定・範囲外",
+            "nta-mid：レビュー済み本文指紋なし",
+            "nta-limits：レビュー済み本文指紋なし"
+          ],
+          "title": "中堅基本計算・令和6年度改正",
+          "kind": "basic",
+          "dependencies": [
+            "nta-mid",
+            "nta-limits"
+          ],
+          "coverage": null,
+          "reviewStatus": "pending",
+          "reviewer": null,
+          "reviewedAt": null,
+          "validUntil": null
+        },
+        "midR8": {
+          "ready": false,
+          "reasons": [
+            "この機能の税務ルールは独立レビュー待ち",
+            "レビュー済みルールの有効期限切れ・未設定",
+            "レビューの適用開始日範囲が未設定・範囲外",
+            "nta-mid：レビュー済み本文指紋なし",
+            "nta-limits：レビュー済み本文指紋なし"
+          ],
+          "title": "中堅基本計算・令和8年度改正",
+          "kind": "basic",
+          "dependencies": [
+            "nta-mid",
+            "nta-limits"
+          ],
+          "coverage": null,
+          "reviewStatus": "pending",
+          "reviewer": null,
+          "reviewedAt": null,
+          "validUntil": null
+        },
+        "allR6": {
+          "ready": false,
+          "reasons": [
+            "この機能の税務ルールは独立レビュー待ち",
+            "レビュー済みルールの有効期限切れ・未設定",
+            "レビューの適用開始日範囲が未設定・範囲外",
+            "nta-all：レビュー済み本文指紋なし",
+            "nta-limits：レビュー済み本文指紋なし"
+          ],
+          "title": "全企業基本計算・令和6年度改正",
+          "kind": "basic",
+          "dependencies": [
+            "nta-all",
+            "nta-limits"
+          ],
+          "coverage": null,
+          "reviewStatus": "pending",
+          "reviewer": null,
+          "reviewedAt": null,
+          "validUntil": null
+        },
+        "trainingSme": {
+          "ready": false,
+          "reasons": [
+            "この機能の必須公式資料が未取得・取得失敗",
+            "この機能の税務ルールは独立レビュー待ち",
+            "レビュー済みルールの有効期限切れ・未設定",
+            "レビューの適用開始日範囲が未設定・範囲外",
+            "nta-sme：レビュー済み本文指紋なし"
+          ],
+          "title": "中小の教育訓練費上乗せ",
+          "kind": "additional",
+          "dependencies": [
+            "nta-sme",
+            "chusho-r6"
+          ],
+          "coverage": null,
+          "reviewStatus": "pending",
+          "reviewer": null,
+          "reviewedAt": null,
+          "validUntil": null
+        },
+        "trainingMid": {
+          "ready": false,
+          "reasons": [
+            "この機能の必須公式資料が未取得・取得失敗",
+            "この機能の税務ルールは独立レビュー待ち",
+            "レビュー済みルールの有効期限切れ・未設定",
+            "レビューの適用開始日範囲が未設定・範囲外",
+            "nta-mid：レビュー済み本文指紋なし"
+          ],
+          "title": "中堅の教育訓練費上乗せ",
+          "kind": "additional",
+          "dependencies": [
+            "nta-mid",
+            "meti-guide"
+          ],
+          "coverage": null,
+          "reviewStatus": "pending",
+          "reviewer": null,
+          "reviewedAt": null,
+          "validUntil": null
+        },
+        "trainingAll": {
+          "ready": false,
+          "reasons": [
+            "この機能の必須公式資料が未取得・取得失敗",
+            "この機能の税務ルールは独立レビュー待ち",
+            "レビュー済みルールの有効期限切れ・未設定",
+            "レビューの適用開始日範囲が未設定・範囲外",
+            "nta-all：レビュー済み本文指紋なし"
+          ],
+          "title": "全企業の教育訓練費上乗せ",
+          "kind": "additional",
+          "dependencies": [
+            "nta-all",
+            "meti-guide"
+          ],
+          "coverage": null,
+          "reviewStatus": "pending",
+          "reviewer": null,
+          "reviewedAt": null,
+          "validUntil": null
+        },
+        "certSme": {
+          "ready": false,
+          "reasons": [
+            "この機能の必須公式資料が未取得・取得失敗",
+            "この機能の税務ルールは独立レビュー待ち",
+            "レビュー済みルールの有効期限切れ・未設定",
+            "レビューの適用開始日範囲が未設定・範囲外",
+            "nta-sme：レビュー済み本文指紋なし"
+          ],
+          "title": "中小の認定上乗せ",
+          "kind": "additional",
+          "dependencies": [
+            "nta-sme",
+            "chusho-r6",
+            "chusho"
+          ],
+          "coverage": null,
+          "reviewStatus": "pending",
+          "reviewer": null,
+          "reviewedAt": null,
+          "validUntil": null
+        },
+        "certMid": {
+          "ready": false,
+          "reasons": [
+            "この機能の必須公式資料が未取得・取得失敗",
+            "この機能の税務ルールは独立レビュー待ち",
+            "レビュー済みルールの有効期限切れ・未設定",
+            "レビューの適用開始日範囲が未設定・範囲外",
+            "nta-mid：レビュー済み本文指紋なし"
+          ],
+          "title": "中堅の認定上乗せ",
+          "kind": "additional",
+          "dependencies": [
+            "nta-mid",
+            "meti-guide"
+          ],
+          "coverage": null,
+          "reviewStatus": "pending",
+          "reviewer": null,
+          "reviewedAt": null,
+          "validUntil": null
+        },
+        "certAll": {
+          "ready": false,
+          "reasons": [
+            "この機能の必須公式資料が未取得・取得失敗",
+            "この機能の税務ルールは独立レビュー待ち",
+            "レビュー済みルールの有効期限切れ・未設定",
+            "レビューの適用開始日範囲が未設定・範囲外",
+            "nta-all：レビュー済み本文指紋なし"
+          ],
+          "title": "全企業の認定上乗せ",
+          "kind": "additional",
+          "dependencies": [
+            "nta-all",
+            "meti-guide"
+          ],
+          "coverage": null,
+          "reviewStatus": "pending",
+          "reviewer": null,
+          "reviewedAt": null,
+          "validUntil": null
+        },
+        "carrySme": {
+          "ready": false,
+          "reasons": [
+            "この機能の税務ルールは独立レビュー待ち",
+            "レビュー済みルールの有効期限切れ・未設定",
+            "レビューの適用開始日範囲が未設定・範囲外",
+            "nta-sme：レビュー済み本文指紋なし",
+            "nta-limits：レビュー済み本文指紋なし",
+            "nta-return-sme：レビュー済み本文指紋なし",
+            "nta-reform2024：レビュー済み本文指紋なし"
+          ],
+          "title": "確認済み既存繰越残高の利用",
+          "kind": "additional",
+          "dependencies": [
+            "nta-sme",
+            "nta-limits",
+            "nta-return-sme",
+            "nta-reform2024"
+          ],
+          "coverage": null,
+          "reviewStatus": "pending",
+          "reviewer": null,
+          "reviewedAt": null,
+          "validUntil": null
+        },
+        "forecastMethod": {
+          "ready": true,
+          "reasons": [],
+          "title": "着地予測の換算方法・仮定表示",
+          "kind": "additional",
+          "dependencies": [],
+          "coverage": {
+            "from": "2025-04-01",
+            "through": "2027-03-31"
+          },
+          "reviewStatus": "approved",
+          "reviewer": "AIによる独立コード・公表資料照合（申告用監査ではない）",
+          "reviewedAt": "2026-10-20T04:40:08Z",
+          "validUntil": "2026-11-20T00:00:00Z"
+        }
+      },
+      "readyFeatureIds": [
+        "smeR6",
+        "smeR8",
+        "forecastMethod"
+      ],
+      "reasons": [],
+      "checkId": "05a1bdd6-73fd-4dc8-8a24-f831a0cb20e1"
+    }
+  ],
+  "denied": [
+    {
+      "path": "/api/check",
+      "status": 403
+    },
+    {
+      "path": "/api/check",
+      "status": 400
+    },
+    {
+      "path": "/api/check?url=https://invalid.example",
+      "status": 404
+    }
+  ]
+}

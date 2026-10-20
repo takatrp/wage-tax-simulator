@@ -1,0 +1,28 @@
+{
+  "createdAt": "2026-10-20T04:43:10.112Z",
+  "node": "v24.16.0",
+  "testExitCode": 0,
+  "testFiles": [
+    "test\\calc.test.mjs",
+    "test\\code-fingerprint.test.mjs",
+    "test\\csv.test.mjs",
+    "test\\forecast.test.mjs",
+    "test\\host-boundary.test.mjs",
+    "test\\integrity.test.mjs",
+    "test\\limited-plan.test.mjs",
+    "test\\public-release.test.mjs",
+    "test\\server.test.mjs",
+    "test\\verification.test.mjs",
+    "test\\worker.test.mjs",
+    "test\\workflow.test.mjs"
+  ],
+  "codeHash": "483908722340fe0b14a782d4c87a52b0e8064da5332e13ce330b669bd5e47f5c",
+  "reviewStatus": "limited_plan",
+  "approvedFeatureIds": [
+    "smeR6",
+    "smeR8",
+    "forecastMethod"
+  ],
+  "scope": "通常の内国法人・非受託/非通算/特殊法人なし。計画用に承認された機能・開始日だけ利用可。申告用監査保証ではない。",
+  "reviewUpdateDue": "2026-11-20T00:00:00Z（法的期限ではない）"
+}

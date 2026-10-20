@@ -1,0 +1,25 @@
+{
+  "checkedAt": "2026-10-20T04:58:23.824Z",
+  "pages": "https://takatrp.github.io/wage-tax-simulator/",
+  "codeHash": "483908722340fe0b14a782d4c87a52b0e8064da5332e13ce330b669bd5e47f5c",
+  "clientHash": "1619281bcf44e147467d0620c590562e958c3fe2b08e13e41e6e8cffb12f331e",
+  "releaseURL": "https://takatrp.github.io/wage-tax-simulator/releases/483908722340fe0b14a782d4c87a52b0e8064da5332e13ce330b669bd5e47f5c/",
+  "sourceCount": 14,
+  "types": {
+    "index.html": "text/html; charset=utf-8",
+    "style.css": "text/css; charset=utf-8",
+    "app.mjs": "text/javascript; charset=utf-8",
+    "config.mjs": "text/javascript; charset=utf-8",
+    "integrity.mjs": "text/javascript; charset=utf-8",
+    "verification.mjs": "text/javascript; charset=utf-8",
+    "case.mjs": "text/javascript; charset=utf-8",
+    "calc.mjs": "text/javascript; charset=utf-8",
+    "workflow.mjs": "text/javascript; charset=utf-8",
+    "forecast.mjs": "text/javascript; charset=utf-8",
+    "matsumoto.css": "text/css; charset=utf-8",
+    "rules.mjs": "text/javascript; charset=utf-8",
+    "csv.mjs": "text/javascript; charset=utf-8",
+    "fields.mjs": "text/javascript; charset=utf-8"
+  },
+  "passed": true
+}
