@@ -1,0 +1,33 @@
+{
+  "verifiedAt": "2026-10-20T09:19:04.481Z",
+  "url": "https://takatrp.github.io/wage-tax-simulator/",
+  "release": "releases/b0d8400977c76e50aa9a99c8e30a31949e996866fc747b373eccb6ba70660366/",
+  "ruleVersion": "jp-corp-wage-2026.10.20-web.6",
+  "codeHash": "b0d8400977c76e50aa9a99c8e30a31949e996866fc747b373eccb6ba70660366",
+  "clientHash": "84c3bc5f3c533767c2feb12700398ecafd04b328f331a4f085f9ece243b5382b",
+  "fileCount": 19,
+  "files": [
+    "index.html",
+    "style.css",
+    "matsumoto.css",
+    "config.mjs",
+    "rules.mjs",
+    "calc.mjs",
+    "csv.mjs",
+    "app.mjs",
+    "fields.mjs",
+    "verification.mjs",
+    "workflow.mjs",
+    "forecast.mjs",
+    "case.mjs",
+    "integrity.mjs",
+    "entry.mjs",
+    "fxcloud.mjs",
+    "fx-ui.mjs",
+    "quick.mjs",
+    "quick-ui.mjs"
+  ],
+  "allSourceBytesMatch": true,
+  "quickGate2025January": true,
+  "sourceDataSent": false
+}
