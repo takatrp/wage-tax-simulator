@@ -1,3 +1,6 @@
+import {createTestImporter} from './import-ui-harness.mjs';
+import {fxProgressText} from '../public/fx-import-client.mjs';
+import {FX_LIMITS,FX_LIMIT_TEXT} from '../public/fx-limits.mjs';
 import * as overlap from '../public/journal-overlap.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -54,7 +57,7 @@ function harness(){
   nodes.set(id,node);return node;
  }
  const root={insertAdjacentHTML(){},querySelector:element,querySelectorAll:selector=>selector==='[data-q-map]'?mapping:selector==='[data-q-include]'?included:[]};
- const context={...quick,...overlap,readFxCloud,fingerprintBytes:bytes=>fingerprinter(bytes),decodeCsv(bytes,encoding){decoded++;return decodeCsv(bytes,encoding);},root,
+ const context={startFxImport:createTestImporter({fingerprint:bytes=>fingerprinter(bytes),decode(bytes,encoding,options){decoded++;return decodeCsv(bytes,encoding,options);}}),fxProgressText,FX_LIMITS,FX_LIMIT_TEXT,...quick,...overlap,readFxCloud,fingerprintBytes:bytes=>fingerprinter(bytes),decodeCsv(bytes,encoding){decoded++;return decodeCsv(bytes,encoding);},root,
   document:{querySelector:element},window:{print(){prints++;onPrint(context.api);}},
   callbacks:{root,refresh:()=>refresher(),isReady:()=>ready,onPeriod:start=>periods.push(start),
    getEvidence:()=>({checkedAt:'2026-10-20T00:00:00Z',expiresAt:'2026-10-20T00:15:00Z',ruleVersion:'SYNTHETIC',scope:'合成レビュー範囲',sources:[{title:'合成の公式出典',url:'https://www.nta.go.jp/'}]})}};
@@ -92,10 +95,10 @@ test('別CSV選択で前案件の期間・賞与見込・補正・税額をリ�
  ui.element('#q-start').value='2026-04';await ui.event('#q-analyze');assert.equal(ui.element('#q-regular').value,'1200000');
 });
 
-test('5MB上限と20MB合計上限ではバイト読込を開始しない',async()=>{
- const ui=harness();let reads=0;const large={size:5*1024*1024+1,arrayBuffer:async()=>{reads++;throw Error('should not read');}};
- await ui.load([large]);assert.equal(reads,0);assert.match(ui.element('#q-status').textContent,/5MB/);
- const one={size:5*1024*1024,arrayBuffer:large.arrayBuffer};await ui.load(Array(5).fill(one));assert.equal(reads,0);assert.match(ui.element('#q-status').textContent,/20MB/);
+test('20MB上限と40MB合計上限ではバイト読込を開始しない',async()=>{
+ const ui=harness();let reads=0;const large={size:20*1024*1024+1,arrayBuffer:async()=>{reads++;throw Error('should not read');}};
+ await ui.load([large]);assert.equal(reads,0);assert.match(ui.element('#q-status').textContent,/20MB/);
+ const one={size:10*1024*1024,arrayBuffer:large.arrayBuffer};await ui.load(Array(5).fill(one));assert.equal(reads,0);assert.match(ui.element('#q-status').textContent,/40MB/);
 });
 
 test('旧ファイル読込の失敗で、新しいCSVと集計状態を上書きしない',async()=>{
@@ -233,7 +236,7 @@ test('実appと実quickは進行中の公式確認を共有し、詳細と概算
  const document={hidden:false,querySelector:node,querySelectorAll:selector=>selector==='.nav'?nav:[],addEventListener(){}};
  const window={scrollTo(){},confirm:()=>true,addEventListener(type,handler){windowEvents.set(type,handler);},print(){windowEvents.get('beforeprint')?.();printed.push(node('#printArea').innerHTML);}};
  function response(){const now=Date.now();return{ok:true,json:async()=>({ruleVersion:rules.RULE_VERSION,codeHash:EXPECTED_CODE_HASH,clientHash:EXPECTED_CLIENT_HASH,checkedAt:new Date(now).toISOString(),expiresAt:new Date(now+600000).toISOString(),scope:'合成の公式確認',reasons:[],sources:rules.SOURCES.map(s=>({...s,ok:true,hash:'0'.repeat(64)})),features:Object.fromEntries(Object.entries(rules.FEATURES).map(([id,f])=>[id,{ready:true,coverage:{from:f.from,through:f.through},validUntil:new Date(now+86400000).toISOString(),reviewer:'合成レビュー'}]))})};}
- const context={...quick,...overlap,...rules,...fields,...entry,...verification,readFxCloud,decodeCsv,certification,calculateCase,createCalculationHandler,EXPECTED_CODE_HASH,EXPECTED_CLIENT_HASH,sample,document,window,performance,AbortSignal,Blob,URL,console,
+ const context={startFxImport:createTestImporter(),fxProgressText,FX_LIMITS,FX_LIMIT_TEXT,...quick,...overlap,...rules,...fields,...entry,...verification,readFxCloud,decodeCsv,certification,calculateCase,createCalculationHandler,EXPECTED_CODE_HASH,EXPECTED_CLIENT_HASH,sample,document,window,performance,AbortSignal,Blob,URL,console,
   setInterval:handler=>intervals.push(handler),setTimeout(){},checkEndpoint:()=>'/api/check',verifyPublicSources:async()=>{},
   localStorage:{getItem:()=>null,setItem(){},removeItem(){}},
   fetch:async(url,options)=>{requests.push({url,options});return requests.length===1?first.promise:response();},

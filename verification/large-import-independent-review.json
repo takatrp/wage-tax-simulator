@@ -1,0 +1,48 @@
+{
+  "reviewedAt": "2026-10-20T11:39:43.713Z",
+  "reviewer": "/root/large_csv_review",
+  "outcome": "独立レビューで未解決P1/P2なし。進捗の二重計上と期間変更取消後の再選択を修正して再確認。最終cacheと総行数境界も独立確認。",
+  "base": "ab9a358b41c33bc92443d6043ce98f3cc118db51",
+  "ruleVersion": "jp-corp-wage-2026.10.20-web.8",
+  "codeHash": "2a26b6c01647c80a6c20955b5ade50ae7292f27a0adbfc9d1d70aca81a03b5f5",
+  "clientHash": "cb1d51eadb8e59ce0bba9aa2792d64acbb87052026c0551913a7b5f31a2fe6bc",
+  "taxArithmeticUnchanged": true,
+  "sourceHashes": {
+    "csv-parser.mjs": "c152c020fcc5c4b18d8c186cc5090d34ee2a960ad4b8a30c282cfe563868a40d",
+    "csv.mjs": "6a9c3ede48e6777ac96a58e799c921df641ed43400177632261dc635d20f5fb9",
+    "fxcloud.mjs": "f9decc25b75402dacc0c004754682718a30107f9840c37568084c8e818477663",
+    "fx-limits.mjs": "6f4cdb457d56a2b2a968669d619d336b462cb6e2044e0ca4336a0e3d056987a8",
+    "fx-import-core.mjs": "a9c576c378dd1d24d0c60ce4d7109179a9da84071cd5d5ac3374155e021b9339",
+    "fx-import-worker.mjs": "56d73ece31f0bd18815ceff74553527372105e77ca774ab38ddf4587be301521",
+    "fx-import-client.mjs": "29fdbe3040ffec0e6ecbe7c98d920135f672f8105eefad5c97fd304e11270197",
+    "quick-ui.mjs": "540ac1a07f011947d4d6bf05bedcf2539e0789b1fa25a7c6179f9006af52ab97",
+    "fx-ui.mjs": "b96e7216568a77cb1f5d27e61d36948985714072bb4caa735c64c97e44573b46",
+    "quick.mjs": "05119a2c0ac02b9dfcbbf422bf123080b64b103c5f97354a5593cad8c322c65e",
+    "journal-overlap.mjs": "4a175c416113a38c8fe001a42979e79b15db20e8d21bb3c1f7412f4a827d027a",
+    "integrity.mjs": "098ddf255aa41bfae51c14a57992abf753d3c74b7b4fa515fcbab362e3afd2ce"
+  },
+  "tests": 208,
+  "independentTests": "81/81 + final cache 6/6 + total-row/duplicate 2/2",
+  "originalCsvBytesVerified": false,
+  "browser": {
+    "environment": "Chrome actual local preview",
+    "syntheticOnly": true,
+    "acceptedRows": [
+      50001,
+      100000
+    ],
+    "missingVoucherRows": [
+      16667,
+      33334
+    ],
+    "expectedSalary": [
+      "5000100000",
+      "10000000000"
+    ],
+    "cancelThenSameFileReselect": true,
+    "source": "Native file chooser and DOM confirmation; no original CSV used",
+    "rejectedRows": 100001,
+    "cp932AutoRows": 7,
+    "importProgressObserved": true
+  }
+}

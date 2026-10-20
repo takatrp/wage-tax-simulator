@@ -1,3 +1,6 @@
+import {createTestImporter} from './import-ui-harness.mjs';
+import {fxProgressText} from '../public/fx-import-client.mjs';
+import {FX_LIMITS,FX_LIMIT_TEXT} from '../public/fx-limits.mjs';
 import * as overlap from '../public/journal-overlap.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -40,7 +43,7 @@ function harness(){
   elements.set(selector,node);return node;
  }
  const periods=['start','end','prevStart','prevEnd','cutoff'].map(key=>element('#fx-'+key));
- const context={...fx,...overlap,decodeCsv(bytes,encoding){decodeCalls++;return decodeCsv(bytes,encoding);},
+ const context={startFxImport:createTestImporter({decode(bytes,encoding,options){decodeCalls++;return decodeCsv(bytes,encoding,options);}}),fxProgressText,FX_LIMIT_TEXT,...fx,...overlap,decodeCsv(bytes,encoding){decodeCalls++;return decodeCsv(bytes,encoding);},
   document:{querySelector:element,querySelectorAll:selector=>
    selector==='[data-fx-role]'?roles:selector==='[data-fx-account]'?accounts:
    selector==='[data-fx-period]'?periods:[]},
@@ -58,11 +61,11 @@ function file(text){const bytes=new TextEncoder().encode(text).buffer;return{siz
 function annualPair(){return[file(journal()),file(journal({start:'2025-04',months:12,value:'90000',prefix:'P'}))];}
 function deferred(){let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return{promise,resolve,reject};}
 
-test('FX CSVは1件5MB超ならバイト読込を開始しない',async()=>{
+test('FX CSVは1件20MB超ならバイト読込を開始しない',async()=>{
  const ui=harness();let reads=0;
- await ui.load([{size:5*1024*1024+1,arrayBuffer:async()=>{reads++;return new ArrayBuffer(5*1024*1024+1);}}]);
+ await ui.load([{size:20*1024*1024+1,arrayBuffer:async()=>{reads++;return new ArrayBuffer(20*1024*1024+1);}}]);
  assert.equal(reads,0);
- assert.match(ui.element('#fxStatus').textContent,/5MB/);
+ assert.match(ui.element('#fxStatus').textContent,/20MB/);
 });
 
 test('古い読込の失敗は新しい正常ファイルと解析状態を上書きしない',async()=>{

@@ -1,4 +1,5 @@
 import { amount,annualPair } from './calc.mjs';
+import {createCsvParser} from './csv-parser.mjs';
 import { validDate } from './rules.mjs';
 export const AGG_FIELDS = {
   mode:'データ区分_actual通年_forecast期中',
@@ -12,36 +13,12 @@ export const EMP_FIELDS = {
   employeeId:'社員ID',currentSalary:'当期給与',previousSalary:'前期給与',currentReimburse:'当期通常補塡',previousReimburse:'前期通常補塡',currentSubsidy:'当期雇用安定助成金',previousSubsidy:'前期雇用安定助成金',
   domesticCurrent:'当期国内賃金台帳',domesticPrevious:'前期国内賃金台帳',officerCurrent:'当期役員',officerPrevious:'前期役員',relatedCurrent:'当期特殊関係者',relatedPrevious:'前期特殊関係者',deductibleCurrent:'当期損金対象',deductiblePrevious:'前期損金対象',allMonthsCurrent:'当期全月支給',allMonthsPrevious:'前期全月支給',insuredCurrent:'当期一般被保険者',insuredPrevious:'前期一般被保険者',seniorCurrent:'当期高齢継続雇用',seniorPrevious:'前期高齢継続雇用'
 };
-export function decodeCsv(buffer,encoding='utf-8') {
-  if(buffer.byteLength>5*1024*1024)throw new Error('CSVは5MB以内にしてください。');
+export function decodeCsv(buffer,encoding='utf-8',{maxBytes=5*1024*1024}={}) {
+  if(buffer.byteLength>maxBytes)throw new Error(`CSVは${maxBytes/1024/1024}MB以内にしてください。`);
   if(!['utf-8','shift_jis'].includes(encoding))throw new Error('文字コードを選択してください。');
   try{return new TextDecoder(encoding,{fatal:true}).decode(buffer).replace(/^\uFEFF/,'');}catch{throw new Error('選択した文字コードで読み取れません。UTF-8 / Shift_JISを確認してください。');}
 }
-export function parseCsv(text,{allowSignedAmounts=false}={}) {
-  if(text.includes('\uFFFD')||/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(text))throw new Error('文字化けまたは制御文字を検出しました。');
-  const rows=[],lineNumbers=[];let row=[],cell='',state='plain',line=1,rowStart=1;
-  const pushCell=()=>{row.push(cell);if(row.length>256)throw new Error('CSVは256列以内にしてください。');cell='';state='plain';};
-  const pushRow=()=>{pushCell();if(row.some(x=>x!=='')){rows.push(row);lineNumbers.push(rowStart);}row=[];if(rows.length>10001)throw new Error('CSVは10,000データ行以内にしてください。');};
-  for(let i=0;i<text.length;i++){
-    const c=text[i];
-    if(state==='quoted') {if(c==='\n'||c==='\r'&&text[i+1]!=='\n')line++;if(c==='"'){if(text[i+1]==='"'){cell+='"';i++;}else state='closed';}else cell+=c;continue;}
-    if(c===','){pushCell();continue;}
-    if(c==='\n'||c==='\r'){if(c==='\r'&&text[i+1]==='\n')i++;pushRow();line++;rowStart=line;continue;}
-    if(state==='closed')throw new Error('引用符の後に区切り文字以外があります。');
-    if(c==='"'){if(cell)throw new Error('引用符がセル途中にあります。');state='quoted';}else cell+=c;
-  }
-  if(state==='quoted')throw new Error('CSVの引用符が閉じられていません。');
-  if(cell!==''||row.length||state==='closed')pushRow();
-  if(rows.length<2)throw new Error('見出し行と1行以上のデータが必要です。');
-  const headers=rows.shift().map(x=>x.trim());
-  lineNumbers.shift();
-  if(headers.some(x=>!x)||new Set(headers).size!==headers.length)throw new Error('空の見出し、または重複した見出しがあります。');
-  for(let i=0;i<rows.length;i++){
-    if(rows[i].length!==headers.length)throw new Error(`${i+2}行目の列数が見出しと一致しません。`);
-    if(rows[i].some(v=>/^[\s\uFEFF]*[=+@-]/.test(v)&&!(allowSignedAmounts&&/^-(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.0+)?$/.test(v.trim()))))throw new Error(`${i+2}行目に数式形式または負数があります。式は実行せず取込を停止しました。`);
-  }
-  return {headers,rows,lineNumbers};
-}
+export function parseCsv(text,options={}){const parser=createCsvParser(options);parser.write(text);const {count,...table}=parser.finish();return table;}
 export function autoMap(headers,fields) {return Object.fromEntries(Object.entries(fields).map(([k,label])=>[k,headers.includes(label)?label:headers.includes(k)?k:'']));}
 function accessor(table,mapping,fields,required) {
   const cols=Object.values(mapping).filter(Boolean);

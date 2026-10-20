@@ -1,38 +1,50 @@
 import {inspectJournalOverlap,overlapWarnings} from './journal-overlap.mjs';
-import {parseCsv} from './csv.mjs';
+import {createCsvParser} from './csv-parser.mjs';
+import {FX_LIMITS} from './fx-limits.mjs';
 import {amount,annualPair} from './calc.mjs';
 import {validDate} from './rules.mjs';
 import {signedAmount} from './forecast.mjs';
 
 const SIDES=['借方','貸方'];
 export const FX_REQUIRED=['月日','伝票番号',...SIDES.flatMap(s=>['科目コード','科目名','取引金額','税抜き金額'].map(x=>s+x))];
-export function detectCsvKind(headers){if(FX_REQUIRED.every(h=>headers.includes(h)))return 'fxcloud';if(headers.includes('社員ID')||headers.includes('employeeId'))return 'employee';return 'aggregate';}
+const FX_ESSENTIAL=FX_REQUIRED.filter(h=>h!=='伝票番号');
+export function detectCsvKind(headers){if(FX_ESSENTIAL.every(h=>headers.includes(h)))return 'fxcloud';if(headers.includes('社員ID')||headers.includes('employeeId'))return 'employee';return 'aggregate';}
 export function fxMoney(raw){const s=String(raw??'').trim();if(!/^-?(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.0+)?$/.test(s))throw new Error('仕訳金額は円単位の整数が必要です。空欄・小数端数・数式は受け付けません。');const value=BigInt(s.replaceAll(',','').replace(/\.0+$/,''));amount(String(value<0n?-value:value),'仕訳金額');return value;}
 const norm=s=>String(s).normalize('NFKC').replace(/[\s　]/g,'');
 function category(name){const n=norm(name);if(/^(役員報酬|役員賞与|法定福利費|福利厚生費)$/.test(n))return 'exclude';if(/^(給料手当|給与手当|給与|賃金|雑給|従業員給与)$/.test(n))return 'regular';if(/^(賞与|従業員賞与)$/.test(n))return 'bonus';if(/^(雑収入|助成金収入|補助金収入|受取補助金|受取助成金)$/.test(n))return 'support';if(/給与|給料|賞与|賃金|役員|助成|補助金|補填|補塡/.test(n))return 'unknown';return null;}
-export function readFxCloud(text){
- const table=parseCsv(text,{allowSignedAmounts:true});
- if(!FX_REQUIRED.every(h=>table.headers.includes(h))||table.headers.some(h=>/累計|累積|残高|前年比/.test(h)))throw new Error('対応するFXクラウドの借方・貸方仕訳一覧ではありません。残高表・月次累計表を仕訳として加算しません。');
- const at=h=>table.headers.indexOf(h),entries=[],transactions=[],companies=new Set(),months=new Set();
- const companyCols=table.headers.filter(h=>['会社名','法人名','会社コード','法人コード'].includes(h));
- table.rows.forEach((row,i)=>{
-  const sourceLine=table.lineNumbers[i];
-  const raw=row[at('月日')].trim(),date=raw.replaceAll('/','-');
-  if(!/^\d{4}[-/]\d{2}[-/]\d{2}$/.test(raw)||!validDate(date))throw new Error(`${i+2}行目：仕訳の日付は西暦4桁の日付が必要です。月日だけから年度を推定しません。`);
-  if(!row[at('伝票番号')].trim())throw new Error(`${i+2}行目：伝票番号がありません。重複確認ができません。`);
-  months.add(date.slice(0,7));for(const h of companyCols){const v=row[at(h)].trim();if(v)companies.add(h+':'+v);}
-  // Entire row stays in memory only. Ignore a renderer-added index for duplicate detection.
-  const identity=JSON.stringify(table.headers.filter(h=>h!=='index').sort().map(h=>{const raw=row[at(h)];let canonical=raw;if(h==='月日')canonical=date;else if(/^(借方|貸方)(取引金額|税抜き金額|消費税等)$/.test(h)&&raw.trim()!=='')canonical=String(fxMoney(raw));return[h,canonical];}));
-  transactions.push({identity,date,line:sourceLine});
-  for(const side of SIDES){const code=row[at(side+'科目コード')].trim(),name=row[at(side+'科目名')].trim(),gross=row[at(side+'取引金額')].trim(),net=row[at(side+'税抜き金額')].trim();
-   if(!code&&!name&&!gross&&!net)continue;
-   if(!code||!name)throw new Error(`${i+2}行目：${side}の科目コード・科目名が不足しています。`);
-   const value=fxMoney(gross),netValue=fxMoney(net),suggestion=category(name);
-   entries.push({key:JSON.stringify([code,name]),code,name,suggestion,date,line:sourceLine,side,column:at(side+'取引金額')+1,netColumn:at(side+'税抜き金額')+1,value:String(value*(side==='借方'?1n:-1n)),netValue:String(netValue*(side==='借方'?1n:-1n))});
-  }
- });
- return {format:'fxcloud-journal',headers:table.headers,rows:table.rows.length,entries,transactions,companies:[...companies],hasCompanyColumn:companyCols.length>0,months:[...months].sort(),from:transactions.map(x=>x.date).sort()[0],through:transactions.map(x=>x.date).sort().at(-1)};
+export function createFxCollector(headers){
+ if(!FX_ESSENTIAL.every(h=>headers.includes(h))||headers.some(h=>/累計|累積|残高|前年比/.test(h)))throw Error('対応するFXクラウドの借方・貸方仕訳一覧ではありません。残高表・月次累計表を仕訳として加算しません。');
+ const columns=new Map(headers.map((h,i)=>[h,i])),at=h=>columns.get(h),entries=[],transactions=[],companies=new Set(),months=new Set(),accounts=new Map();
+ const companyCols=headers.filter(h=>['会社名','法人名','会社コード','法人コード'].includes(h));
+ const canonical=headers.filter(h=>h!=='index').sort().map(h=>({h,i:at(h),money:/^(借方|貸方)(取引金額|税抜き金額|消費税等)$/.test(h)}));
+ let missingVoucher=0,rows=0,from=null,through=null;const missingVoucherLines=[];
+ return{
+  transactions,
+  row(row,sourceLine){
+   const raw=row[at('月日')].trim(),date=raw.replaceAll('/','-');
+   if(!/^\d{4}[-/]\d{2}[-/]\d{2}$/.test(raw)||!validDate(date))throw Error(sourceLine+'行目：仕訳の日付は西暦4桁の日付が必要です。月日だけから年度を推定しません。合計行等は自動除外していません。');
+   const before=entries.length;
+   for(const side of SIDES){const code=row[at(side+'科目コード')].trim(),name=row[at(side+'科目名')].trim(),gross=row[at(side+'取引金額')].trim(),net=row[at(side+'税抜き金額')].trim();
+    if(!code&&!name&&!gross&&!net)continue;
+    if(!code||!name)throw Error(sourceLine+'行目：'+side+'の科目コード・科目名が不足しています。');
+    let value,netValue;try{value=fxMoney(gross);netValue=fxMoney(net);}catch(e){throw Error(sourceLine+'行目：'+side+' '+e.message);}
+    const key=JSON.stringify([code,name]);if(!accounts.has(key))accounts.set(key,{key,code,name,suggestion:category(name)});
+    entries.push({...accounts.get(key),date,line:sourceLine,side,column:at(side+'取引金額')+1,netColumn:at(side+'税抜き金額')+1,value:String(value*(side==='借方'?1n:-1n)),netValue:String(netValue*(side==='借方'?1n:-1n))});
+   }
+   if(entries.length===before)throw Error(sourceLine+'行目：借方・貸方の有効な科目と金額がありません。合計行等は自動除外していません。');
+   if(!columns.has('伝票番号')||!row[at('伝票番号')].trim()){missingVoucher++;if(missingVoucherLines.length<20)missingVoucherLines.push(sourceLine);}
+   months.add(date.slice(0,7));for(const h of companyCols){const v=row[at(h)].trim();if(v)companies.add(h+':'+v);}
+   let identity;try{identity=JSON.stringify(canonical.map(({h,i,money})=>[h,h==='月日'?date:money&&row[i].trim()!==''?String(fxMoney(row[i])):row[i]]));}catch(e){throw Error(sourceLine+'行目：'+e.message);}
+   transactions.push({identity,date,line:sourceLine});rows++;if(from===null||date<from)from=date;if(through===null||date>through)through=date;
+  },
+  finish(){const warnings=missingVoucher?[(!columns.has('伝票番号')?'伝票番号列がありません。':'伝票番号が空欄の仕訳があります。')+missingVoucher.toLocaleString('ja-JP')+'行を削除せず保持しました（元CSV物理行 '+missingVoucherLines.join(' / ')+(missingVoucher>missingVoucherLines.length?' ほか':'')+'）。番号から同一性を確定せず、ファイル指紋・全列内容・期間の重なりを別に確認します。']:[];return{format:'fxcloud-journal',headers,rows,entries,transactions,companies:[...companies],hasCompanyColumn:companyCols.length>0,months:[...months].sort(),from,through,warnings,missingVoucher,missingVoucherLines};}
+ };
 }
+export function createFxParser({maxRows=FX_LIMITS.fileRows}={}){
+ let collector;const parser=createCsvParser({allowSignedAmounts:true,maxRows,retainRows:false,onHeader:headers=>{collector=createFxCollector(headers);},onRow:(row,line)=>collector.row(row,line)});
+ return{write:text=>parser.write(text),finish(){parser.finish();return collector.finish();},get count(){return parser.count;},get transactions(){return collector?.transactions??[];}};
+}
+export function readFxCloud(text){const parser=createFxParser();parser.write(text.replace(/^\uFEFF/,''));return parser.finish();}
 export function fxAccounts(files){const map=new Map();for(const file of files)if(!['support','ignore'].includes(file.role))for(const e of file.data.entries)if(!map.has(e.key))map.set(e.key,{key:e.key,code:e.code,name:e.name,suggestion:e.suggestion});return [...map.values()];}
 function monthList(start,end){const out=[],d=new Date(start+'T00:00:00Z');while(d.toISOString().slice(0,7)<=end.slice(0,7)&&out.length<13){out.push(d.toISOString().slice(0,7));d.setUTCMonth(d.getUTCMonth()+1);}return out;}
 function lastDay(month){const d=new Date(month+'-01T00:00:00Z');d.setUTCMonth(d.getUTCMonth()+1);d.setUTCDate(0);return d.toISOString().slice(0,10);}
@@ -44,7 +56,7 @@ export function inspectFxFiles(files,options){
  const through=lastDay(cutoff);if(through<start||through>end)throw new Error('完了月は対象年度内にしてください。');
  if(!files.length||files.length>8)throw new Error('仕訳CSVは1〜8件で指定してください。');
  const required={current:monthList(start,through),previous:monthList(prevStart,prevEnd)},identities=new Set(),companyColumns=new Map(),accounts=new Map(),evidence=[],coverage={current:new Set(),previous:new Set()},issues=[],fileSummaries=[];
- const {uniqueFiles:unusedFiles,...duplicateDiagnostics}=fxOverlap(files,required);const duplicateIds=new Set(duplicateDiagnostics.duplicateFiles.map(f=>f.file));const warnings=overlapWarnings(duplicateDiagnostics);
+ const {uniqueFiles:unusedFiles,...duplicateDiagnostics}=fxOverlap(files,required);const duplicateIds=new Set(duplicateDiagnostics.duplicateFiles.map(f=>f.file));const warnings=[...overlapWarnings(duplicateDiagnostics),...files.flatMap((f,i)=>(f.data.warnings??[]).map(w=>`資料${i+1}：${w}`))];
  for(let i=0;i<files.length;i++){
   const f=files[i],role=f.role??'auto';if(!['auto','current','previous','support','ignore'].includes(role))throw new Error('ファイルの用途を選択してください。');
   if(role==='ignore'||duplicateIds.has(i+1)){fileSummaries.push({file:i+1,role,rows:f.data.rows});continue;}

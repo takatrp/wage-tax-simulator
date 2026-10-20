@@ -1,0 +1,48 @@
+{
+  "measuredAt": "2026-10-20T11:34:56.299Z",
+  "runtime": "v24.16.0",
+  "environment": "Windows desktop Node; each case in a fresh process; synthetic 49-column CSV; heap observations are not browser/peak certification",
+  "limits": {
+    "fileRows": 100000,
+    "totalRows": 200000,
+    "fileMiB": 20,
+    "totalMiB": 40,
+    "files": 8
+  },
+  "samples": [
+    {
+      "rows": 50001,
+      "bytes": 7732562,
+      "importMs": 1998,
+      "analyzeMs": 88,
+      "progress": 120,
+      "entries": 100002,
+      "retainedHeapDeltaMiB": 29,
+      "observedHeapDeltaMiB": 56,
+      "salaryTotal": "5000100000",
+      "errors": 0
+    },
+    {
+      "rows": 100000,
+      "bytes": 15482403,
+      "importMs": 3962,
+      "analyzeMs": 100,
+      "progress": 239,
+      "entries": 200000,
+      "retainedHeapDeltaMiB": 57,
+      "observedHeapDeltaMiB": 71,
+      "salaryTotal": "10000000000",
+      "errors": 0
+    },
+    {
+      "files": 8,
+      "rows": 200000,
+      "importMs": 8565,
+      "analyzeMs": 976,
+      "strictMs": 891,
+      "pairs": 28,
+      "requiresConfirmation": true,
+      "evidence": 400000
+    }
+  ]
+}

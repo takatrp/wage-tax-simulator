@@ -20,12 +20,12 @@ export function quickPeriods(start, through) {
 }
 export function analyzeQuick(files, {start,through,mapping={}}) {
   const period=quickPeriods(start,through), errors=[], warnings=[], accounts=new Map(), companies=new Set();
-  const {uniqueFiles,...duplicateDiagnostics}=inspectJournalOverlap(files,{period,mapping});warnings.push(...overlapWarnings(duplicateDiagnostics));
-  const rows=[];
+  const {uniqueFiles,...duplicateDiagnostics}=inspectJournalOverlap(files,{period,mapping});warnings.push(...overlapWarnings(duplicateDiagnostics),...uniqueFiles.flatMap(f=>f.warnings??[]));
+  const byAccount=new Map(),periodMonths=new Set([...period.current,...period.previous]);
   for(const file of uniqueFiles){
     for(const company of file.companies||[])companies.add(company);
-    for(const t of file.transactions||[]){if(![...period.current,...period.previous].includes(t.date.slice(0,7)))errors.push('対象期間外の仕訳があります。年度・入力済み月またはファイルを確認してください。');}
-    for(const e of file.entries){if(!accounts.has(e.key))accounts.set(e.key,{key:e.key,code:e.code,name:e.name,kind:mapping[e.key]??e.suggestion??'exclude'});rows.push(e);}
+    for(const t of file.transactions||[]){if(!periodMonths.has(t.date.slice(0,7)))errors.push('対象期間外の仕訳があります。年度・入力済み月またはファイルを確認してください。');}
+    for(const e of file.entries){if(!accounts.has(e.key))accounts.set(e.key,{key:e.key,code:e.code,name:e.name,kind:mapping[e.key]??e.suggestion??'exclude'});if(!byAccount.has(e.key))byAccount.set(e.key,[]);byAccount.get(e.key).push(e);}
   }
   // Company labels can differ by field; conflicting values within the same identification field stop aggregation.
   const companyFields=new Map();for(const c of companies){const p=c.indexOf(':');const k=c.slice(0,p),v=c.slice(p+1);if(!companyFields.has(k))companyFields.set(k,new Set());companyFields.get(k).add(v);}
@@ -37,7 +37,7 @@ export function analyzeQuick(files, {start,through,mapping={}}) {
     if(a.kind==='unknown')warnings.push(`未分類の科目「${a.name}」を除外しています。必要なら科目の扱いを変更してください。`);
     if(a.kind==='support')warnings.push(`補助金等の科目「${a.name}」を検出しました。給与充当補塡・雇用安定助成金の調整なしと仮定した概算です。該当する場合は詳しい条件確認へ進んでください。`);
     if(!['regular','bonus'].includes(a.kind))continue;
-    const entries=rows.filter(e=>e.key===a.key);
+    const entries=byAccount.get(a.key)??[];
     if(entries.some(e=>e.value!==e.netValue)){errors.push(`科目「${a.name}」の税込・税抜金額が一致しません。給与として集計する前に確認してください。`);continue;}
     for(const e of entries){const m=e.date.slice(0,7), side=period.current.includes(m)?'current':period.previous.includes(m)?'previous':null;if(!side)continue;total[side][a.kind]+=BigInt(e.value);if(a.kind==='regular')regularMonths[side].add(m);}
   }
