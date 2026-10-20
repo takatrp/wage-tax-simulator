@@ -1,0 +1,2 @@
+import{calculate}from'./calc.mjs';import{forecastInput}from'./forecast.mjs';
+export function calculateCase(input){if(input.mode!=='forecast')return calculate(input);const forecast=forecastInput(input),result=calculate(forecast.input);return{...result,forecast:forecast.meta,frames:result.frames.map(f=>({...f,eligibilityStatus:f.status,status:f.status==='試算上の要件充足'?'年間見込・確定判定ではない':f.status+'（年間見込・確定判定ではない）',reasons:[...f.reasons,...forecast.meta.assumptions]}))};}

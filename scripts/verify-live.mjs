@@ -21,9 +21,9 @@ if(process.argv.includes('--pages')){
   const opts=await fetch(CHECK_SERVICE_ORIGIN+'/api/check',{method:'OPTIONS',headers:{Origin:origin}});assert.equal(opts.status,204);assert.equal(opts.headers.get('access-control-allow-origin'),origin);assert.equal(opts.headers.get('access-control-allow-credentials'),null);
   const checks=[];
   for(let i=0;i<2;i++){
-    const r=await fetch(CHECK_SERVICE_ORIGIN+'/api/check',{method:'POST',headers:{Origin:origin},cache:'no-store',signal:AbortSignal.timeout(20000)});assert.equal(r.status,200);
+    const r=await fetch(CHECK_SERVICE_ORIGIN+'/api/check',{method:'POST',headers:{Origin:origin},cache:'no-store',signal:AbortSignal.timeout(20000)});const data=await r.json();assert.equal(r.status,200,JSON.stringify(data));
     assert.equal(r.headers.get('access-control-allow-origin'),origin);assert.match(r.headers.get('cache-control'),/no-store/);
-    const data=await r.json();checks.push(data);assert.equal(data.codeHash,manifest.codeHash);assert.equal(data.clientHash,manifest.clientHash);assert.equal(data.ruleVersion,RULE_VERSION);
+    checks.push(data);assert.equal(data.codeHash,manifest.codeHash);assert.equal(data.clientHash,manifest.clientHash);assert.equal(data.ruleVersion,RULE_VERSION);
   }
   assert.notEqual(checks[0].checkId,checks[1].checkId);assert.notEqual(checks[0].checkedAt,checks[1].checkedAt);
   const denied=[];

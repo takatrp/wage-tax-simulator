@@ -1,12 +1,12 @@
 {
   "ruleVersion": "jp-corp-wage-2026.10.20-web.4",
-  "codeHash": "cd87d9a9f392a78dbd1ecec866583663d927f76e01e683d25e99f134634e39c8",
+  "codeHash": "0144f7b9dfe22a0f65f2308d2bbc1b81dd698c1433fb486a383c566adcc0d6aa",
   "clientHash": "1619281bcf44e147467d0620c590562e958c3fe2b08e13e41e6e8cffb12f331e",
   "features": {
     "smeR6": {
       "status": "approved",
       "reviewer": "AIによる独立コード・公表資料照合（申告用監査ではない）",
-      "reviewedAt": "2026-10-20T04:20:51Z",
+      "reviewedAt": "2026-10-20T04:40:08Z",
       "validUntil": "2026-11-20T00:00:00Z",
       "coverage": {
         "from": "2025-04-01",
@@ -21,7 +21,7 @@
     "smeR8": {
       "status": "approved",
       "reviewer": "AIによる独立コード・公表資料照合（申告用監査ではない）",
-      "reviewedAt": "2026-10-20T04:20:51Z",
+      "reviewedAt": "2026-10-20T04:40:08Z",
       "validUntil": "2026-11-20T00:00:00Z",
       "coverage": {
         "from": "2026-04-01",
@@ -36,7 +36,7 @@
     "forecastMethod": {
       "status": "approved",
       "reviewer": "AIによる独立コード・公表資料照合（申告用監査ではない）",
-      "reviewedAt": "2026-10-20T04:20:51Z",
+      "reviewedAt": "2026-10-20T04:40:08Z",
       "validUntil": "2026-11-20T00:00:00Z",
       "coverage": {
         "from": "2025-04-01",

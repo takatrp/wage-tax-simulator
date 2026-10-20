@@ -50,7 +50,7 @@ function normalizeOfficial(html) {
 }
 async function sha256(data){const bytes=typeof data==='string'?new TextEncoder().encode(data):data;return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join('');}
 async function fetchOfficial(source,fetcher=fetch) {
-  const response=await fetcher(source.url,{redirect:'error',cache:'no-store',cf:{cacheTtl:0,cacheEverything:false},signal:AbortSignal.timeout(8000),headers:{'User-Agent':'WageTaxRuleCheck/0.4','Accept':source.format==='pdf'?'application/pdf':'text/html','Cache-Control':'no-cache'}});
+  const response=await fetcher(source.url,{redirect:'manual',cache:'no-store',cf:{cacheTtl:0,cacheEverything:false},signal:AbortSignal.timeout(8000),headers:{'User-Agent':'WageTaxRuleCheck/0.4','Accept':source.format==='pdf'?'application/pdf':'text/html','Cache-Control':'no-cache'}});
   if(!response.ok)throw new Error(`HTTP ${response.status}`);
   const contentType=response.headers.get('content-type')??'';
   if(!contentType.includes(source.format==='pdf'?'application/pdf':'text/html'))throw new Error('想定外のContent-Type');
@@ -101,6 +101,16 @@ async function checkOfficial({manifest,codeHash,fetcher=fetch,now,clock=Date.now
 
 
 // Built with the exact shared rules and freshness modules, no third-party libraries.
+async function hasEmptyBody(request,timeoutMs=2000){
+ if(request.body===null)return true;
+ let reader,timer;
+ try{
+  reader=request.body.getReader();
+  const empty=(async()=>{for(let reads=0;reads<16;reads++){const{done,value}=await reader.read();if(done)return true;if(!(value instanceof Uint8Array)||value.byteLength!==0)return false;}return false;})();
+  return await Promise.race([empty,new Promise(resolve=>{timer=setTimeout(()=>resolve(false),timeoutMs);})]);
+ }catch{return false;}
+ finally{clearTimeout(timer);void reader?.cancel().catch(()=>{});}
+}
 function createCheckWorker({manifest,codeHash,fetcher=fetch,allowedOrigin='https://takatrp.github.io'}){
  let inflight=false;
  return{async fetch(request){
@@ -112,7 +122,7 @@ function createCheckWorker({manifest,codeHash,fetcher=fetch,allowedOrigin='https
   if(url.pathname!=='/api/check'||url.search)return reply(404,{error:'not found'});
   if(origin!==allowedOrigin)return reply(403,{error:'Origin is not allowed'});
   if(request.method==='OPTIONS')return new Response(null,{status:204,headers:{...headers,'Access-Control-Allow-Methods':'POST, OPTIONS','Access-Control-Allow-Headers':'Cache-Control, Content-Type','Access-Control-Max-Age':'0'}});
-  if(request.method!=='POST'||request.body!==null||Number(request.headers.get('content-length')??0)!==0||request.headers.has('transfer-encoding'))return reply(400,{error:'Empty POST only. Payroll, company information, files and arbitrary URLs are not accepted.'});
+  if(request.method!=='POST'||Number(request.headers.get('content-length')??0)!==0||request.headers.has('transfer-encoding')||!await hasEmptyBody(request))return reply(400,{error:'Empty POST only. Payroll, company information, files and arbitrary URLs are not accepted.'});
   if(inflight)return reply(429,{error:'確認中です。完了後に再試行してください。'});
   inflight=true;
   try{return reply(200,{...await checkOfficial({manifest,codeHash,fetcher}),checkId:crypto.randomUUID()});}
@@ -121,6 +131,6 @@ function createCheckWorker({manifest,codeHash,fetcher=fetch,allowedOrigin='https
  }};
 }
 
-const REVIEW_MANIFEST={"ruleVersion":"jp-corp-wage-2026.10.20-web.4","codeHash":"cd87d9a9f392a78dbd1ecec866583663d927f76e01e683d25e99f134634e39c8","clientHash":"1619281bcf44e147467d0620c590562e958c3fe2b08e13e41e6e8cffb12f331e","features":{"smeR6":{"status":"approved","reviewer":"AIによる独立コード・公表資料照合（申告用監査ではない）","reviewedAt":"2026-10-20T04:20:51Z","validUntil":"2026-11-20T00:00:00Z","coverage":{"from":"2025-04-01","through":"2026-03-31"},"fingerprints":{"nta-sme":"77b8fea1033a7bf32193665da092472636a2c9b523026b523ad6220071006bbb","nta-size":"d59e06baf4038cfd46a64923924df54b072bc2e7fd1fb898428ac70820fb0e90","nta-limits":"b9e10b4ba3f2e7b96b12979722e0f081b112c9980d8fe6f3173177cccf98e5c0"}},"smeR8":{"status":"approved","reviewer":"AIによる独立コード・公表資料照合（申告用監査ではない）","reviewedAt":"2026-10-20T04:20:51Z","validUntil":"2026-11-20T00:00:00Z","coverage":{"from":"2026-04-01","through":"2027-03-31"},"fingerprints":{"nta-sme":"77b8fea1033a7bf32193665da092472636a2c9b523026b523ad6220071006bbb","nta-size":"d59e06baf4038cfd46a64923924df54b072bc2e7fd1fb898428ac70820fb0e90","nta-limits":"b9e10b4ba3f2e7b96b12979722e0f081b112c9980d8fe6f3173177cccf98e5c0"}},"forecastMethod":{"status":"approved","reviewer":"AIによる独立コード・公表資料照合（申告用監査ではない）","reviewedAt":"2026-10-20T04:20:51Z","validUntil":"2026-11-20T00:00:00Z","coverage":{"from":"2025-04-01","through":"2027-03-31"},"fingerprints":{}}},"note":"通常内国法人・非受託・非通算・特殊法人なしの計画用概算に限定。認定なし・既存繰越0円・旧年度の教育加算なし。2024年度・中堅・全企業・認定/教育加算・繰越利用は未承認。validUntilはレビュー更新期限であり法的有効期限ではない。申告用監査保証ではない。"};
-const VERIFIED_CODE_HASH="cd87d9a9f392a78dbd1ecec866583663d927f76e01e683d25e99f134634e39c8";
+const REVIEW_MANIFEST={"ruleVersion":"jp-corp-wage-2026.10.20-web.4","codeHash":"0144f7b9dfe22a0f65f2308d2bbc1b81dd698c1433fb486a383c566adcc0d6aa","clientHash":"1619281bcf44e147467d0620c590562e958c3fe2b08e13e41e6e8cffb12f331e","features":{"smeR6":{"status":"approved","reviewer":"AIによる独立コード・公表資料照合（申告用監査ではない）","reviewedAt":"2026-10-20T04:40:08Z","validUntil":"2026-11-20T00:00:00Z","coverage":{"from":"2025-04-01","through":"2026-03-31"},"fingerprints":{"nta-sme":"77b8fea1033a7bf32193665da092472636a2c9b523026b523ad6220071006bbb","nta-size":"d59e06baf4038cfd46a64923924df54b072bc2e7fd1fb898428ac70820fb0e90","nta-limits":"b9e10b4ba3f2e7b96b12979722e0f081b112c9980d8fe6f3173177cccf98e5c0"}},"smeR8":{"status":"approved","reviewer":"AIによる独立コード・公表資料照合（申告用監査ではない）","reviewedAt":"2026-10-20T04:40:08Z","validUntil":"2026-11-20T00:00:00Z","coverage":{"from":"2026-04-01","through":"2027-03-31"},"fingerprints":{"nta-sme":"77b8fea1033a7bf32193665da092472636a2c9b523026b523ad6220071006bbb","nta-size":"d59e06baf4038cfd46a64923924df54b072bc2e7fd1fb898428ac70820fb0e90","nta-limits":"b9e10b4ba3f2e7b96b12979722e0f081b112c9980d8fe6f3173177cccf98e5c0"}},"forecastMethod":{"status":"approved","reviewer":"AIによる独立コード・公表資料照合（申告用監査ではない）","reviewedAt":"2026-10-20T04:40:08Z","validUntil":"2026-11-20T00:00:00Z","coverage":{"from":"2025-04-01","through":"2027-03-31"},"fingerprints":{}}},"note":"通常内国法人・非受託・非通算・特殊法人なしの計画用概算に限定。認定なし・既存繰越0円・旧年度の教育加算なし。2024年度・中堅・全企業・認定/教育加算・繰越利用は未承認。validUntilはレビュー更新期限であり法的有効期限ではない。申告用監査保証ではない。"};
+const VERIFIED_CODE_HASH="0144f7b9dfe22a0f65f2308d2bbc1b81dd698c1433fb486a383c566adcc0d6aa";
 export default createCheckWorker({manifest:REVIEW_MANIFEST,codeHash:VERIFIED_CODE_HASH});
