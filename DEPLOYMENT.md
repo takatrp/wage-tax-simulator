@@ -1,4 +1,31 @@
-# 現在の配備 — web.9（2026-10-20）
+# 現在の配備 — web.10（2026-10-21）
+
+公開ツール：https://takatrp.github.io/wage-tax-simulator/
+制度確認API：https://wage-tax-rule-check.takatrp0222.chatgpt.site
+
+名称候補だけを先に表示し、他科目は明示追加する方式へ修正しました。科目選択・区分・期間変更から通常給与累計、別表示の年換算額、賞与、前年通年額、概算へ自動反映します。再集計・概算ボタンと金額の再転記は不要です。仕様・原因と実額表は [AUTO-PAYROLL.md](AUTO-PAYROLL.md)。
+
+全247件合格（今回追加24件）、独立UIレビュー15件に重大な未解消所見なし。ローカルと公開Chromeで、候補のみ表示→解除→賞与再分類→他科目追加→完了月変更→全解除の保留→再取込→既知0円を確認しました。同じCSVの再選択時にchangeが発火しない問題も実機で発見して修正・回帰済みです。旧223件ではボタン操作後の集計を主に検証し、今回の自動反映を確認できていませんでした。
+
+架空例：通常給与累計750,000円・年換算1,500,000円・既払賞与20,000円から年間見込1,520,000円、控除目安96,000円。スタッフ給与解除で累計600,000円・年換算1,200,000円・年間見込1,220,000円・控除目安3,000円へ自動更新。同科目の賞与変更では既払賞与170,000円・年間見込1,370,000円・控除目安51,000円。前年通年1,200,000円を用いた上限前の例で、法人税額1,000,000円を入力した上限200,000円内でも96,000円を確認しました。
+
+実装commit：1e734891041368ef2adedbd0ef3c14b736a3b2e5
+実装版：jp-corp-wage-2026.10.21-web.10
+コード指紋：860c832c71c37bb8772b3f37d8024dcd4cf5581fe9a544f277cde61b17fc9c24
+画面指紋：88dd4b84e8a364e20074d29d3fc86d0bbb1c499301d1a71602f535b1141294e5
+API source：414301d9ea8cf6b4e06fe561c73aad09cdba7be8
+Sites保存版11：appgprj_6ad6e84462b88191af122b3b9a9869b0~appgver_8663972e15148191ab9279c75e5098ac
+配備：appgdep_6ad7fe3cc394819193b9274c173cb448（succeeded、2026-10-20T23:50:25.930125+00:00）
+
+空POST 2026-10-20T23:53:16.322Z と 2026-10-20T23:53:17.685Z で確認ID・日時が更新。公式本文の固定承認指紋、4機能の限定ready、未対応年度停止、CORS/no-storeを確認しました。Pages全26ソースとbuild-infoが承認版に一致。公開ブラウザー検証 2026-10-20T23:55:08.304Z。画面の公式確認日時は2026-10-20T23:53:45.910Z、web.10と対象年度・適用範囲を確認しました。利用時は毎回確認し直します。
+
+税額計算本体・出典承認指紋・対象年度・機能別承認範囲・レビュー期限は不変。期間未確定、欠落月、区分未定、全解除、重複未確認、取得失敗、変更疑い、期限切れは保留します。CSV原本・給与・社名・認証情報は公開せず、既存の公開範囲と同じURLを維持しました。新APIキー・OAuth・秘密設定は作成していません。原本CSVのバイト互換性は未検証、経営判断用の条件付き概算で申告確定額ではありません。
+
+証拠：verification/auto-payroll-release-tests.txt、auto-payroll-release-prepared.json、auto-payroll-api-artifact.json、auto-payroll-deployment.json、auto-payroll-live-api.json、auto-payroll-live-pages.json、auto-payroll-live-browser.json、auto-payroll-live-ui.png。ローカルのブラウザーは閉じ、検証サーバーを停止しました。公開ブラウザーも検証を終了し、CSVなしの利用開始画面を残しました。公開作業の承認待ち・未解決阻害はありません。
+
+---
+
+# web.9 配備記録（2026-10-20）
 
 公開ツール：https://takatrp.github.io/wage-tax-simulator/
 制度確認API：https://wage-tax-rule-check.takatrp0222.chatgpt.site

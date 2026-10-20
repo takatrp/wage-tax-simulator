@@ -1,0 +1,23 @@
+{
+  "frontendCommit": "1e734891041368ef2adedbd0ef3c14b736a3b2e5",
+  "frontend": "https://takatrp.github.io/wage-tax-simulator/",
+  "backend": "https://wage-tax-rule-check.takatrp0222.chatgpt.site",
+  "apiSourceCommit": "414301d9ea8cf6b4e06fe561c73aad09cdba7be8",
+  "versionNumber": 11,
+  "versionId": "appgprj_6ad6e84462b88191af122b3b9a9869b0~appgver_8663972e15148191ab9279c75e5098ac",
+  "deploymentId": "appgdep_6ad7fe3cc394819193b9274c173cb448",
+  "deploymentStatus": "succeeded",
+  "deployedAt": "2026-10-20T23:50:25.930125+00:00",
+  "audienceUnchanged": "public",
+  "newSecretsOrOAuth": false,
+  "privateDataPublished": false,
+  "postPublicationBrowser": "passed",
+  "browserVerifiedAt": "2026-10-20T23:55:08.304Z",
+  "all26PublicFilesMatch": true,
+  "apiCheckedAt": [
+    "2026-10-20T23:53:16.322Z",
+    "2026-10-20T23:53:17.685Z"
+  ],
+  "apiCheckIdsDiffer": true,
+  "blockers": []
+}
