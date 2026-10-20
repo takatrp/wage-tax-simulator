@@ -4,14 +4,13 @@ import {FX_LIMITS} from './fx-limits.mjs';
 import {amount,annualPair} from './calc.mjs';
 import {validDate} from './rules.mjs';
 import {signedAmount} from './forecast.mjs';
+import {classifyPayrollName,payrollAccountKey,payrollAccounts,accountNameWarnings} from './payroll-accounts.mjs';
 
 const SIDES=['借方','貸方'];
 export const FX_REQUIRED=['月日','伝票番号',...SIDES.flatMap(s=>['科目コード','科目名','取引金額','税抜き金額'].map(x=>s+x))];
 const FX_ESSENTIAL=FX_REQUIRED.filter(h=>h!=='伝票番号');
 export function detectCsvKind(headers){if(FX_ESSENTIAL.every(h=>headers.includes(h)))return 'fxcloud';if(headers.includes('社員ID')||headers.includes('employeeId'))return 'employee';return 'aggregate';}
 export function fxMoney(raw){const s=String(raw??'').trim();if(!/^-?(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.0+)?$/.test(s))throw new Error('仕訳金額は円単位の整数が必要です。空欄・小数端数・数式は受け付けません。');const value=BigInt(s.replaceAll(',','').replace(/\.0+$/,''));amount(String(value<0n?-value:value),'仕訳金額');return value;}
-const norm=s=>String(s).normalize('NFKC').replace(/[\s　]/g,'');
-function category(name){const n=norm(name);if(/^(役員報酬|役員賞与|法定福利費|福利厚生費)$/.test(n))return 'exclude';if(/^(給料手当|給与手当|給与|賃金|雑給|従業員給与)$/.test(n))return 'regular';if(/^(賞与|従業員賞与)$/.test(n))return 'bonus';if(/^(雑収入|助成金収入|補助金収入|受取補助金|受取助成金)$/.test(n))return 'support';if(/給与|給料|賞与|賃金|役員|助成|補助金|補填|補塡/.test(n))return 'unknown';return null;}
 export function createFxCollector(headers){
  if(!FX_ESSENTIAL.every(h=>headers.includes(h))||headers.some(h=>/累計|累積|残高|前年比/.test(h)))throw Error('対応するFXクラウドの借方・貸方仕訳一覧ではありません。残高表・月次累計表を仕訳として加算しません。');
  const columns=new Map(headers.map((h,i)=>[h,i])),at=h=>columns.get(h),entries=[],transactions=[],companies=new Set(),months=new Set(),accounts=new Map();
@@ -28,7 +27,8 @@ export function createFxCollector(headers){
     if(!code&&!name&&!gross&&!net)continue;
     if(!code||!name)throw Error(sourceLine+'行目：'+side+'の科目コード・科目名が不足しています。');
     let value,netValue;try{value=fxMoney(gross);netValue=fxMoney(net);}catch(e){throw Error(sourceLine+'行目：'+side+' '+e.message);}
-    const key=JSON.stringify([code,name]);if(!accounts.has(key))accounts.set(key,{key,code,name,suggestion:category(name)});
+    const departmentCode=columns.has(side+'部門コード')?row[at(side+'部門コード')].trim():'',departmentName=columns.has(side+'部門名')?row[at(side+'部門名')].trim():'';
+    const key=payrollAccountKey(code,name,departmentCode,departmentName);if(!accounts.has(key)){const c=classifyPayrollName(name);accounts.set(key,{key,code,name,departmentCode,departmentName,suggestion:c.kind,classificationReason:c.reason});}
     entries.push({...accounts.get(key),date,line:sourceLine,side,column:at(side+'取引金額')+1,netColumn:at(side+'税抜き金額')+1,value:String(value*(side==='借方'?1n:-1n)),netValue:String(netValue*(side==='借方'?1n:-1n))});
    }
    if(entries.length===before)throw Error(sourceLine+'行目：借方・貸方の有効な科目と金額がありません。合計行等は自動除外していません。');
@@ -45,7 +45,7 @@ export function createFxParser({maxRows=FX_LIMITS.fileRows}={}){
  return{write:text=>parser.write(text),finish(){parser.finish();return collector.finish();},get count(){return parser.count;},get transactions(){return collector?.transactions??[];}};
 }
 export function readFxCloud(text){const parser=createFxParser();parser.write(text.replace(/^\uFEFF/,''));return parser.finish();}
-export function fxAccounts(files){const map=new Map();for(const file of files)if(!['support','ignore'].includes(file.role))for(const e of file.data.entries)if(!map.has(e.key))map.set(e.key,{key:e.key,code:e.code,name:e.name,suggestion:e.suggestion});return [...map.values()];}
+export function fxAccounts(files,options={}){return payrollAccounts(files.map((f,i)=>({...f,sourceFile:i+1})).filter(f=>!['support','ignore'].includes(f.role)&&!options.duplicateIds?.has(f.sourceFile)),options);}
 function monthList(start,end){const out=[],d=new Date(start+'T00:00:00Z');while(d.toISOString().slice(0,7)<=end.slice(0,7)&&out.length<13){out.push(d.toISOString().slice(0,7));d.setUTCMonth(d.getUTCMonth()+1);}return out;}
 function lastDay(month){const d=new Date(month+'-01T00:00:00Z');d.setUTCMonth(d.getUTCMonth()+1);d.setUTCDate(0);return d.toISOString().slice(0,10);}
 export function fxOverlap(files,period,mapping={}){return inspectJournalOverlap(files.flatMap((f,i)=>['support','ignore'].includes(f.role)?[]:[{...f.data,sourceFile:i+1}]),{period,mapping});}
@@ -55,13 +55,12 @@ export function inspectFxFiles(files,options){
  if(!/^\d{4}-\d{2}$/.test(cutoff??'')||!validDate(cutoff+'-01'))throw new Error('当期の最終完了月を指定してください。');
  const through=lastDay(cutoff);if(through<start||through>end)throw new Error('完了月は対象年度内にしてください。');
  if(!files.length||files.length>8)throw new Error('仕訳CSVは1〜8件で指定してください。');
- const required={current:monthList(start,through),previous:monthList(prevStart,prevEnd)},identities=new Set(),companyColumns=new Map(),accounts=new Map(),evidence=[],coverage={current:new Set(),previous:new Set()},issues=[],fileSummaries=[];
+ const required={current:monthList(start,through),previous:monthList(prevStart,prevEnd)},identities=new Set(),companyColumns=new Map(),evidence=[],coverage={current:new Set(),previous:new Set()},issues=[],fileSummaries=[];
  const {uniqueFiles:unusedFiles,...duplicateDiagnostics}=fxOverlap(files,required);const duplicateIds=new Set(duplicateDiagnostics.duplicateFiles.map(f=>f.file));const warnings=[...overlapWarnings(duplicateDiagnostics),...files.flatMap((f,i)=>(f.data.warnings??[]).map(w=>`資料${i+1}：${w}`))];
  for(let i=0;i<files.length;i++){
   const f=files[i],role=f.role??'auto';if(!['auto','current','previous','support','ignore'].includes(role))throw new Error('ファイルの用途を選択してください。');
   if(role==='ignore'||duplicateIds.has(i+1)){fileSummaries.push({file:i+1,role,rows:f.data.rows});continue;}
   for(const identity of f.data.companies){const p=identity.indexOf(':'),h=identity.slice(0,p),v=identity.slice(p+1);if(!companyColumns.has(h))companyColumns.set(h,new Set());companyColumns.get(h).add(v);}
-  for(const e of f.data.entries){if(accounts.has(e.code)&&accounts.get(e.code)!==e.name)issues.push(`資料${i+1}：同じ科目コードに異なる科目名があります。科目体系を確認してください。`);accounts.set(e.code,e.name);}
   if(role==='support'){fileSummaries.push({file:i+1,role,rows:f.data.rows,from:f.data.from,through:f.data.through});continue;}
   const periods=new Map();
   for(const t of f.data.transactions){
@@ -74,8 +73,8 @@ export function inspectFxFiles(files,options){
  }
  for(const values of companyColumns.values())if(values.size>1)issues.push('異なる法人識別値が混在しています。同一法人として反映できません。');
  for(const period of ['current','previous']){const missing=required[period].filter(m=>!coverage[period].has(m));if(missing.length)issues.push((period==='current'?'当期':'前期通年')+'の仕訳月が不足しています：'+missing.join(' / '));}
- const modes=through===end?'actual':'forecast';
- return {duplicateDiagnostics,warnings,options:{start,end,prevStart,prevEnd,cutoff},through,mode:modes,months:required.current.length,observedMonths:required.current.join('|'),coverage:Object.fromEntries(Object.entries(coverage).map(([k,v])=>[k,[...v].sort()])),evidence,fileSummaries,issues:[...new Set(issues)],canApply:issues.length===0,hasCompanyIdentity:companyColumns.size>0,accounts:fxAccounts(files)};
+ const modes=through===end?'actual':'forecast',accounts=fxAccounts(files,{period:required,duplicateIds});warnings.push(...accountNameWarnings(accounts));
+ return {duplicateDiagnostics,warnings,options:{start,end,prevStart,prevEnd,cutoff},through,mode:modes,months:required.current.length,observedMonths:required.current.join('|'),coverage:Object.fromEntries(Object.entries(coverage).map(([k,v])=>[k,[...v].sort()])),evidence,fileSummaries,issues:[...new Set(issues)],canApply:issues.length===0,hasCompanyIdentity:companyColumns.size>0,accounts};
 }
 export function applyFxReview(inspection,review){
  if(!inspection.canApply)throw new Error('期間・月の不足等を解消してから反映してください。');

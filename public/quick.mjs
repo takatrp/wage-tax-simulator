@@ -1,6 +1,7 @@
 import {inspectJournalOverlap,overlapWarnings} from './journal-overlap.mjs';
 import {amount, MAX_AMOUNT, rateFor} from './calc.mjs';
 import {validDate, selectRules} from './rules.mjs';
+import {payrollAccounts,accountNameWarnings} from './payroll-accounts.mjs';
 
 export const QUICK_ASSUMPTIONS = [
   '当期・直前期とも通常の12か月事業年度で、設立・解散・清算・組織再編等の適用除外年度に該当しないと仮定しています。',
@@ -19,34 +20,35 @@ export function quickPeriods(start, through) {
   return{start:start+'-01',end,through,months,current:Array.from({length:months},(_,i)=>monthAt(first+i)),previous:Array.from({length:12},(_,i)=>monthAt(first-12+i))};
 }
 export function analyzeQuick(files, {start,through,mapping={}}) {
-  const period=quickPeriods(start,through), errors=[], warnings=[], accounts=new Map(), companies=new Set();
+  const period=quickPeriods(start,through), errors=[], warnings=[], companies=new Set();
   const {uniqueFiles,...duplicateDiagnostics}=inspectJournalOverlap(files,{period,mapping});warnings.push(...overlapWarnings(duplicateDiagnostics),...uniqueFiles.flatMap(f=>f.warnings??[]));
-  const byAccount=new Map(),periodMonths=new Set([...period.current,...period.previous]);
+  const accounts=payrollAccounts(uniqueFiles,{period,mapping}),periodMonths=new Set([...period.current,...period.previous]);warnings.push(...accountNameWarnings(accounts));
   for(const file of uniqueFiles){
     for(const company of file.companies||[])companies.add(company);
-    for(const t of file.transactions||[]){if(!periodMonths.has(t.date.slice(0,7)))errors.push('対象期間外の仕訳があります。年度・入力済み月またはファイルを確認してください。');}
-    for(const e of file.entries){if(!accounts.has(e.key))accounts.set(e.key,{key:e.key,code:e.code,name:e.name,kind:mapping[e.key]??e.suggestion??'exclude'});if(!byAccount.has(e.key))byAccount.set(e.key,[]);byAccount.get(e.key).push(e);}
+    if((file.transactions||[]).some(t=>!periodMonths.has(t.date.slice(0,7))))errors.push('対象期間外の仕訳があります。年度・入力済み月またはファイルを確認してください。');
   }
   // Company labels can differ by field; conflicting values within the same identification field stop aggregation.
   const companyFields=new Map();for(const c of companies){const p=c.indexOf(':');const k=c.slice(0,p),v=c.slice(p+1);if(!companyFields.has(k))companyFields.set(k,new Set());companyFields.get(k).add(v);}
-  const codeNames=new Map();for(const a of accounts.values()){if(codeNames.has(a.code)&&codeNames.get(a.code)!==a.name)errors.push('同じ科目コードに異なる科目名があります。科目体系を確認してください。');codeNames.set(a.code,a.name);}
   if([...companyFields.values()].some(v=>v.size>1))errors.push('会社識別欄が一致しません。同じ法人のCSVだけを選んでください。');
   if(!companies.size)warnings.push('会社識別欄がないため、選択したCSVは同じ法人のものと仮定しています。');
-  const total={current:{regular:0n,bonus:0n},previous:{regular:0n,bonus:0n}}, regularMonths={current:new Set(),previous:new Set()};
-  for(const a of accounts.values()){
-    if(a.kind==='unknown')warnings.push(`未分類の科目「${a.name}」を除外しています。必要なら科目の扱いを変更してください。`);
-    if(a.kind==='support')warnings.push(`補助金等の科目「${a.name}」を検出しました。給与充当補塡・雇用安定助成金の調整なしと仮定した概算です。該当する場合は詳しい条件確認へ進んでください。`);
+  const total={current:{regular:0n,bonus:0n},previous:{regular:0n,bonus:0n}}, regularMonths={current:new Set(),previous:new Set()},warningCounts={unknown:0,support:0};
+  let errorCount=errors.length;const accountError=message=>{errorCount++;if(errors.length<20)errors.push(message);};
+  for(const a of accounts){
+    if(a.kind==='pending')accountError(`科目「${a.name}」を選択しました。通常給与か賞与かを指定してください。`);
+    if(a.kind==='unknown'&&++warningCounts.unknown<=20)warnings.push(`未分類の科目「${a.name}」を除外しています。必要なら科目の扱いを変更してください。`);
+    if(a.kind==='support'&&++warningCounts.support<=20)warnings.push(`補助金等の科目「${a.name}」を検出しました。給与充当補塡・雇用安定助成金の調整なしと仮定した概算です。該当する場合は詳しい条件確認へ進んでください。`);
     if(!['regular','bonus'].includes(a.kind))continue;
-    const entries=byAccount.get(a.key)??[];
-    if(entries.some(e=>e.value!==e.netValue)){errors.push(`科目「${a.name}」の税込・税抜金額が一致しません。給与として集計する前に確認してください。`);continue;}
-    for(const e of entries){const m=e.date.slice(0,7), side=period.current.includes(m)?'current':period.previous.includes(m)?'previous':null;if(!side)continue;total[side][a.kind]+=BigInt(e.value);if(a.kind==='regular')regularMonths[side].add(m);}
+    if(a.netMismatch){accountError(`科目「${a.name}」の税込・税抜金額が一致しません。給与として集計する前に確認してください。`);continue;}
+    for(const side of ['current','previous']){total[side][a.kind]+=BigInt(a[side]);if(a.kind==='regular')for(const m of a[side+'Months'])regularMonths[side].add(m);}
   }
+  for(const [kind,count]of Object.entries(warningCounts))if(count>20)warnings.push((kind==='unknown'?'未分類':'補助金等')+'は計'+count.toLocaleString('ja-JP')+'科目です。個別の注意は先頭20科目まで表示し、全科目は科目一覧で確認できます。');
+  if(errorCount>errors.length)errors.push('ほか'+(errorCount-errors.length).toLocaleString('ja-JP')+'件の科目エラーがあります。科目一覧で確認してください。');
   for(const s of ['current','previous'])for(const k of ['regular','bonus'])if(total[s][k]<0n)errors.push('給与科目の差引額がマイナスです。科目・期間・取消仕訳を確認してください。');
   const currentComplete=period.current.every(m=>regularMonths.current.has(m)),previousComplete=period.previous.every(m=>regularMonths.previous.has(m));
   if(!currentComplete)warnings.push('当期の通常給与を全入力月で確認できません。通常給与累計を補ってください。空欄は0円として扱いません。');
   if(!previousComplete)warnings.push('前年通年の通常給与を確認できません。前年通年給与を1つ入力してください。前年同期間額を通年額には使いません。');
   warnings.push('仕訳が各月にあることは全件収録の証明ではありません。選択月までの給与が入力済みであると仮定します。');
-  return{period,duplicateDiagnostics,requiresOverlapConfirmation:duplicateDiagnostics.requiresConfirmation,accounts:[...accounts.values()],errors:[...new Set(errors)],warnings:[...new Set(warnings)],currentRegular:currentComplete?String(total.current.regular):null,paidBonus:String(total.current.bonus),previousAnnual:previousComplete?String(total.previous.regular+total.previous.bonus):null};
+  return{period,duplicateDiagnostics,requiresOverlapConfirmation:duplicateDiagnostics.requiresConfirmation,accounts,errors:[...new Set(errors)],warnings:[...new Set(warnings)],currentRegular:currentComplete?String(total.current.regular):null,paidBonus:String(total.current.bonus),previousAnnual:previousComplete?String(total.previous.regular+total.previous.bonus):null};
 }
 function signed(value,label){const s=String(value??'');if(!/^-?(0|[1-9]\d*)$/.test(s)||s==='-0')throw Error(`${label}は整数の円額で入力してください。`);const n=BigInt(s);if(n>MAX_AMOUNT||n< -MAX_AMOUNT)throw Error(`${label}が大きすぎます。`);return n;}
 export function estimateQuick(input){

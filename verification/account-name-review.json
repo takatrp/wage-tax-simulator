@@ -1,0 +1,19 @@
+{
+  "scope": "Independent review of local payroll account candidate selection and aggregation; this is not a tax-rule approval or publication authorization.",
+  "reviewer": "/root/account_name_review",
+  "status": "completed",
+  "criticalOpenFindings": [],
+  "independentTests": "test/account-name-review.test.mjs (8 tests)",
+  "relatedVerification": "74/74 related tests passed, then 32/32 independent + quick UI state tests on the final reset-context changes. Root final full suite: 221/221 including the additional reset-note regression.",
+  "resolvedFindings": [
+    {"finding": "Salary taxes, advance payments, reserves and retirement labels were auto-selected by wage keywords.", "resolution": "Ambiguous settlement/tax/retirement terms remain unchecked; insurer/welfare/officer/outsourcing terms are excluded by default. Unknown additions require an explicit regular/bonus classification."},
+    {"finding": "Per-account warning DOM could grow to 100000 nodes despite table pagination.", "resolution": "Unknown and support warnings each show the first 20 accounts plus their total count. Error detail is bounded while its blocking condition remains."},
+    {"finding": "Old period context could remain after a new file, encoding reset or restore.", "resolution": "New-file and period changes clear account search/context; reset also clears the period explanation. The last reset-note line and regression were verified in the root final 221-test run."}
+  ],
+  "checked": ["same-code aliases", "department separation", "cross-file selection scope", "immutable shared parsed arrays", "credit returns", "byte copies and overlap confirmation", "unknown months stay null", "search and page state", "old result/save/print invalidation", "100000 account aggregation and bounded table output"],
+  "reviewerPerformanceObservation": "100000 synthetic accounts plus last page generation: 641ms; environment-specific, not a service guarantee.",
+  "unchangedTaxCode": "calc.mjs, rules.mjs, forecast.mjs, case.mjs, quick.mjs signed/estimateQuick and fxcloud.mjs applyFxReview remained unchanged from the base revision.",
+  "candidateCodeHash": "5540277b5403fbb518bad11fac72cbc58d0ae655b4895ec0b3c042de962e1839",
+  "candidateClientHash": "681c09c11ea0c5b887d832f645b0b4f1e6276ca35b748c338f3bcc070f6f3c6c",
+  "publication": "Not performed. Approval manifests, build-info and the deployed API were not updated."
+}

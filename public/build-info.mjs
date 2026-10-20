@@ -1,3 +1,3 @@
 // Derived metadata, excluded from source digests to avoid circular hashes.
-export const EXPECTED_CODE_HASH='2a26b6c01647c80a6c20955b5ade50ae7292f27a0adbfc9d1d70aca81a03b5f5';
-export const EXPECTED_CLIENT_HASH='cb1d51eadb8e59ce0bba9aa2792d64acbb87052026c0551913a7b5f31a2fe6bc';
+export const EXPECTED_CODE_HASH='75e79febe86b72f41619739bdc80e3dfd9d555c15fa9fb9fb792f5a32118eedc';
+export const EXPECTED_CLIENT_HASH='8a64445421f08d9b05d8b4aeb8aa5b3c91b76a1359aea165bc1ed926df170573';

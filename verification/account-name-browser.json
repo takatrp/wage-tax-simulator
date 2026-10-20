@@ -1,0 +1,51 @@
+{
+  "checkedAt": "2026-10-20T12:38:10.619Z",
+  "scope": "Local browser only; synthetic CSVs; no publication or payroll transmission.",
+  "url": "http://127.0.0.1:4178/",
+  "tabId": "1971359830",
+  "smallBefore": {
+    "bonus": "40000",
+    "checked": [
+      "給料手当 5001 部門なしを集計",
+      "製造原価賃金 5001 製造を集計",
+      "パート給与 独自-P 本社を集計",
+      "従業員夏季賞与 B100 部門なしを集計"
+    ],
+    "prior": "1080000",
+    "regular": "632500"
+  },
+  "selectionInvalidated": {
+    "accountsVisible": true,
+    "inputsHidden": true,
+    "printHidden": true,
+    "resultEmpty": true
+  },
+  "smallAfter": {
+    "bonus": "40000",
+    "prior": "1080000",
+    "regular": "607500"
+  },
+  "pendingClassification": {
+    "accountsVisible": true,
+    "inputsHidden": true,
+    "status": "科目「給与源泉所得税」を選択しました。通常給与か賞与かを指定してください。"
+  },
+  "approvalGate": {
+    "annual1255000": true,
+    "printHidden": true,
+    "taxHeld": true
+  },
+  "large100000": {
+    "bonus": "0",
+    "fileRows": true,
+    "inputsVisible": true,
+    "prior": "",
+    "regular": "10000000",
+    "rowsRendered": 2,
+    "selected": [
+      "パート給与 任意-01 部門なしを集計"
+    ]
+  },
+  "consoleErrors": [],
+  "screenshot": "verification/account-selection-desktop.png"
+}

@@ -22,3 +22,5 @@ button,.button{border-radius:8px;border-color:var(--line-strong);font-weight:800
 
 .quick-card #q-fileList input[type=checkbox]{width:auto;display:inline-block;margin-right:.5rem}.quick-card #q-overlapText{white-space:normal;overflow-wrap:anywhere}.fx-import #fxOverlapDetails{white-space:pre-wrap}
 .fx-import [hidden]{display:none!important}
+.account-table{min-width:920px!important;width:100%}.account-table td{vertical-align:top}.account-table .money{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}.account-table input[type=checkbox]{width:20px;height:20px;min-height:20px;margin:5px;cursor:pointer}.account-table select{width:220px;max-width:100%}.account-table small{display:block;max-width:260px;line-height:1.5;margin-top:5px;color:#475569}#q-accounts{margin:18px 0;padding-top:12px;border-top:1px solid var(--line)}#q-accountSearch,#fxAccountSearch{max-width:480px;width:100%}
+#q-mapping .table-scroll,#fxAccountMap .table-scroll{max-height:560px;overflow:auto}.account-table thead th{position:sticky;top:0;z-index:1}.account-control-label{display:block;font-size:11px;font-weight:400;max-width:240px;margin-bottom:3px}

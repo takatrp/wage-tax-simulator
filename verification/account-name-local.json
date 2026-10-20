@@ -1,0 +1,43 @@
+{
+  "checkedAt": "2026-10-20T12:36:39.225Z",
+  "baseCommit": "e01e5011a04e7f3fa24ca5d530c16904871038b4",
+  "scope": "Local only. No push, API deployment, public build or approval-manifest update.",
+  "exitCode": 0,
+  "durationMs": 27322,
+  "testFiles": 23,
+  "summary": [
+    "ℹ tests 221",
+    "ℹ pass 221",
+    "ℹ fail 0",
+    "ℹ cancelled 0",
+    "ℹ skipped 0",
+    "ℹ duration_ms 26545.8979"
+  ],
+  "math": [
+    {
+      "path": "public/calc.mjs",
+      "unchanged": true,
+      "sha256": "b9bafd78eecc9f95eec424ffbb0a6c55b39cb13714e868a37fe6086ce7388e1c"
+    },
+    {
+      "path": "public/rules.mjs",
+      "unchanged": true,
+      "sha256": "870e774d888412a8045beb9327a400a76e148bc25ab65dbacea1aaf7d81c7116"
+    },
+    {
+      "path": "public/forecast.mjs",
+      "unchanged": true,
+      "sha256": "1a84238f508227786cf172b0a49d061d1ece8fac5e1b77bcd39c256134dde545"
+    },
+    {
+      "path": "public/case.mjs",
+      "unchanged": true,
+      "sha256": "56b9193bace97dea3b6d1d538ea60151338018c752fb250ae3b895f74b683669"
+    },
+    {
+      "path": "public/quick.mjs: signed / estimateQuick",
+      "unchanged": true,
+      "sha256": "60450a46574bc5bc9881af9a91f982029571c30959f85fcb3718a59b89530deb"
+    }
+  ]
+}

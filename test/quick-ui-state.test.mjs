@@ -8,6 +8,7 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {decodeCsv} from '../public/csv.mjs';
 import {readFxCloud} from '../public/fxcloud.mjs';
+import * as payroll from '../public/payroll-accounts.mjs';
 import * as quick from '../public/quick.mjs';
 import {saveCase,restoreCase} from '../public/entry.mjs';
 import {initialInput} from '../public/fields.mjs';
@@ -32,7 +33,7 @@ function deferred(){let resolve,reject;const promise=new Promise((yes,no)=>{reso
 function file(text,name='SYNTHETIC.csv'){const bytes=new TextEncoder().encode(text).buffer;return{name,size:bytes.byteLength,arrayBuffer:async()=>bytes};}
 
 function harness(){
- const nodes=new Map();let mapping=[],included=[],ready=true,refresher=async()=>true,fingerprinter=overlap.fingerprintBytes,onPrint=()=>{},prints=0,decoded=0;
+ const nodes=new Map();let mapping=[],checks=[],included=[],ready=true,refresher=async()=>true,fingerprinter=overlap.fingerprintBytes,onPrint=()=>{},prints=0,decoded=0;
  const periods=[];
  function element(id){
   if(nodes.has(id))return nodes.get(id);
@@ -50,27 +51,58 @@ function harness(){
     const key='map-'+match[1];nodes.delete(key);const control=element(key);
     control.dataset.qMap=match[1];control.value=match[2].match(/<option value="([^"]+)" selected>/)?.[1]??'regular';return control;
    });
+   if(id==='#q-mapping')checks=[...value.matchAll(/<input\b[^>]*data-q-account="(\d+)"[^>]*>/g)].map(match=>{const key='check-'+match[1];nodes.delete(key);const control=element(key);control.dataset.qAccount=match[1];control.checked=/\bchecked\b/.test(match[0]);return control;});
    if(id==='#q-fileList')included=[...value.matchAll(/<input\b[^>]*data-q-include="(\d+)"[^>]*>/g)].map(match=>{
     const key='include-'+match[1];nodes.delete(key);const control=element(key);control.dataset.qInclude=match[1];control.checked=/\bchecked\b/.test(match[0]);return control;
    });
   }});
   nodes.set(id,node);return node;
  }
- const root={insertAdjacentHTML(){},querySelector:element,querySelectorAll:selector=>selector==='[data-q-map]'?mapping:selector==='[data-q-include]'?included:[]};
- const context={startFxImport:createTestImporter({fingerprint:bytes=>fingerprinter(bytes),decode(bytes,encoding,options){decoded++;return decodeCsv(bytes,encoding,options);}}),fxProgressText,FX_LIMITS,FX_LIMIT_TEXT,...quick,...overlap,readFxCloud,fingerprintBytes:bytes=>fingerprinter(bytes),decodeCsv(bytes,encoding){decoded++;return decodeCsv(bytes,encoding);},root,
+ const root={insertAdjacentHTML(){},querySelector:element,querySelectorAll:selector=>selector==='[data-q-map]'?mapping:selector==='[data-q-account]'?checks:selector==='[data-q-include]'?included:[]};
+ const context={...payroll,startFxImport:createTestImporter({fingerprint:bytes=>fingerprinter(bytes),decode(bytes,encoding,options){decoded++;return decodeCsv(bytes,encoding,options);}}),fxProgressText,FX_LIMITS,FX_LIMIT_TEXT,...quick,...overlap,readFxCloud,fingerprintBytes:bytes=>fingerprinter(bytes),decodeCsv(bytes,encoding){decoded++;return decodeCsv(bytes,encoding);},root,
   document:{querySelector:element},window:{print(){prints++;onPrint(context.api);}},
   callbacks:{root,refresh:()=>refresher(),isReady:()=>ready,onPeriod:start=>periods.push(start),
    getEvidence:()=>({checkedAt:'2026-10-20T00:00:00Z',expiresAt:'2026-10-20T00:15:00Z',ruleVersion:'SYNTHETIC',scope:'合成レビュー範囲',sources:[{title:'合成の公式出典',url:'https://www.nta.go.jp/'}]})}};
  vm.createContext(context);vm.runInContext(source+'\nglobalThis.api=mountQuick(callbacks);',context);
  element('#q-encoding').value='auto';element('#q-paidBonus').value='0';
  element('#q-inputs').hidden=true;element('#q-print').hidden=true;
- return{element,api:context.api,periods,decoded:()=>decoded,prints:()=>prints,mapping:()=>mapping,included:()=>included,fingerprint:fn=>{fingerprinter=fn;},
+ return{element,api:context.api,periods,decoded:()=>decoded,prints:()=>prints,mapping:()=>mapping,checks:()=>checks,included:()=>included,fingerprint:fn=>{fingerprinter=fn;},
   ready:value=>{ready=value;},refresh:fn=>{refresher=fn;},onPrint:fn=>{onPrint=fn;},
   async load(files){element('#q-files').files=files;await element('#q-files').dispatch('change');},
   event:(id,type='click')=>element(id).dispatch(type),
   values:()=>Object.fromEntries(keys.map(key=>[key,element('#q-'+key).value]))};
 }
 async function prepare(ui,extra=[]){await ui.load([file(journal({extra}))]);ui.element('#q-start').value='2026-04';await ui.event('#q-analyze');ui.element('#q-previousAnnual').value='1000000';}
+
+test('名称候補をチェックで解除・追加し、要確認の区分を決めるまで金額保存を止める',async()=>{
+ const ui=harness();await prepare(ui,[journalRow({伝票番号:'NAME',借方科目コード:'独自-A',借方科目名:'製造原価賃金',借方取引金額:'25000',借方税抜き金額:'25000'}),journalRow({伝票番号:'MAYBE',借方科目コード:'独自-B',借方科目名:'給与調整',借方取引金額:'5000',借方税抜き金額:'5000'})]);
+ assert.equal(ui.element('#q-regular').value,'625000');assert.equal(ui.element('#q-accounts').hidden,false);assert.match(ui.element('#q-mapping').innerHTML,/25,000/);
+ const selected=()=>ui.checks().find(el=>el.dataset.qAccount==='2');assert.equal(selected().checked,true);selected().checked=false;await selected().dispatch('change');
+ assert.equal(ui.element('#q-accounts').hidden,false);assert.equal(ui.element('#q-inputs').hidden,true);assert.equal(ui.api.snapshot(),null);await ui.event('#q-analyze');assert.equal(ui.element('#q-regular').value,'600000');
+ const unknown=()=>ui.checks().find(el=>el.dataset.qAccount==='3');assert.equal(unknown().checked,false);unknown().checked=true;await unknown().dispatch('change');await ui.event('#q-analyze');
+ assert.equal(ui.element('#q-accounts').hidden,false);assert.equal(ui.element('#q-inputs').hidden,true);assert.match(ui.element('#q-status').textContent,/通常給与か賞与/);assert.equal(ui.api.snapshot(),null);
+ const pick=ui.mapping().find(el=>el.dataset.qMap==='3');pick.value='bonus';await pick.dispatch('change');await ui.event('#q-analyze');assert.equal(ui.element('#q-paidBonus').value,'5000');assert.equal(ui.element('#q-regular').value,'600000');
+});
+
+test('給与の税抜相違で停止しても一覧を表示し、該当科目を外して再集計できる',async()=>{
+ const ui=harness();await prepare(ui,[journalRow({伝票番号:'MISMATCH',借方科目コード:'NEW',借方科目名:'パート給与',借方税抜き金額:'90000'})]);
+ assert.equal(ui.element('#q-inputs').hidden,true);assert.equal(ui.element('#q-accounts').hidden,false);assert.match(ui.element('#q-status').textContent,/税込・税抜/);
+ const check=ui.checks().find(el=>el.dataset.qAccount==='2');check.checked=false;await check.dispatch('change');await ui.event('#q-analyze');assert.equal(ui.element('#q-inputs').hidden,false);assert.equal(ui.element('#q-regular').value,'600000');
+});
+
+test('科目一覧は期間重複の確認中も操作でき、科目変更後も重複確認を省略しない',async()=>{
+ const ui=harness(),text=journal();await ui.load([file(text),file(text+'\r\n')]);ui.element('#q-start').value='2026-04';await ui.event('#q-analyze');
+ assert.equal(ui.element('#q-accounts').hidden,false);assert.equal(ui.element('#q-overlap').hidden,false);const check=ui.checks()[0];check.checked=false;await check.dispatch('change');await ui.event('#q-analyze');
+ assert.equal(ui.element('#q-overlap').hidden,false);assert.equal(ui.api.snapshot(),null);assert.equal(ui.element('#q-accounts').hidden,false);
+});
+
+test('検索・科目ページ移動でもチェック状態を保持し、選択変更で旧結果と印刷を失効する',async()=>{
+ const ui=harness(),extra=Array.from({length:65},(_,i)=>journalRow({伝票番号:'PAGE'+i,借方科目コード:'X'+i,借方科目名:'独自科目'+String(i).padStart(2,'0')}));await prepare(ui,extra);await ui.event('#q-calculate');assert.equal(ui.element('#q-print').hidden,false);
+ assert.equal(ui.mapping().length,50);await ui.event('#q-accountNext');assert.ok(ui.mapping().length<50);const last=ui.mapping().at(-1),index=last.dataset.qMap;last.value='bonus';await last.dispatch('change');
+ assert.equal(ui.api.snapshot(),null);assert.equal(ui.element('#q-result').innerHTML,'');assert.equal(ui.element('#q-print').hidden,true);
+ ui.element('#q-accountSearch').value='独自科目64';await ui.event('#q-accountSearch','input');assert.equal(ui.mapping().length,1);assert.equal(ui.mapping()[0].dataset.qMap,index);assert.equal(ui.mapping()[0].value,'bonus');
+ ui.element('#q-accountSearch').value='';await ui.event('#q-accountSearch','input');await ui.event('#q-analyze');assert.equal(ui.element('#q-paidBonus').value,'100000');
+});
 
 test('quick初期文字コードでCSVを読み込み、前期不足を0円で埋めない',async()=>{
  const ui=harness();await ui.load([file(journal())]);
@@ -91,7 +123,7 @@ test('別CSV選択で前案件の期間・賞与見込・補正・税額をリ�
  const ui=harness();await prepare(ui);ui.element('#q-futureBonus').value='12345';ui.element('#q-adjustment').value='67890';ui.element('#q-corporateTax').value='98765';
  await ui.load([file(journal({value:'200000',prefix:'NEW'}))]);
  for(const key of ['start','regular','previousAnnual','futureBonus','adjustment','corporateTax'])assert.equal(ui.element('#q-'+key).value,'',key);
- assert.equal(ui.element('#q-paidBonus').value,'0');assert.equal(ui.element('#q-inputs').hidden,true);
+ assert.equal(ui.element('#q-paidBonus').value,'0');assert.equal(ui.element('#q-inputs').hidden,true);assert.match(ui.element('#q-periodNote').textContent,/対象年度と入力済み月/);
  ui.element('#q-start').value='2026-04';await ui.event('#q-analyze');assert.equal(ui.element('#q-regular').value,'1200000');
 });
 
@@ -236,7 +268,7 @@ test('実appと実quickは進行中の公式確認を共有し、詳細と概算
  const document={hidden:false,querySelector:node,querySelectorAll:selector=>selector==='.nav'?nav:[],addEventListener(){}};
  const window={scrollTo(){},confirm:()=>true,addEventListener(type,handler){windowEvents.set(type,handler);},print(){windowEvents.get('beforeprint')?.();printed.push(node('#printArea').innerHTML);}};
  function response(){const now=Date.now();return{ok:true,json:async()=>({ruleVersion:rules.RULE_VERSION,codeHash:EXPECTED_CODE_HASH,clientHash:EXPECTED_CLIENT_HASH,checkedAt:new Date(now).toISOString(),expiresAt:new Date(now+600000).toISOString(),scope:'合成の公式確認',reasons:[],sources:rules.SOURCES.map(s=>({...s,ok:true,hash:'0'.repeat(64)})),features:Object.fromEntries(Object.entries(rules.FEATURES).map(([id,f])=>[id,{ready:true,coverage:{from:f.from,through:f.through},validUntil:new Date(now+86400000).toISOString(),reviewer:'合成レビュー'}]))})};}
- const context={startFxImport:createTestImporter(),fxProgressText,FX_LIMITS,FX_LIMIT_TEXT,...quick,...overlap,...rules,...fields,...entry,...verification,readFxCloud,decodeCsv,certification,calculateCase,createCalculationHandler,EXPECTED_CODE_HASH,EXPECTED_CLIENT_HASH,sample,document,window,performance,AbortSignal,Blob,URL,console,
+ const context={...payroll,startFxImport:createTestImporter(),fxProgressText,FX_LIMITS,FX_LIMIT_TEXT,...quick,...overlap,...rules,...fields,...entry,...verification,readFxCloud,decodeCsv,certification,calculateCase,createCalculationHandler,EXPECTED_CODE_HASH,EXPECTED_CLIENT_HASH,sample,document,window,performance,AbortSignal,Blob,URL,console,
   setInterval:handler=>intervals.push(handler),setTimeout(){},checkEndpoint:()=>'/api/check',verifyPublicSources:async()=>{},
   localStorage:{getItem:()=>null,setItem(){},removeItem(){}},
   fetch:async(url,options)=>{requests.push({url,options});return requests.length===1?first.promise:response();},
@@ -258,4 +290,10 @@ test('実appと実quickは進行中の公式確認を共有し、詳細と概算
  assert.equal(requests.length,2);for(const {url,options}of requests){assert.equal(url,'/api/check');assert.equal(options.method,'POST');assert.equal(options.body,undefined);}
  vm.runInContext('check.features.quickEstimate.ready=false;',context);for(const tick of intervals)tick();
  assert.ok(!node('#q-result').innerHTML.includes('控除の目安（税額上限前）'));assert.equal(node('#q-print').hidden,true);
+});
+
+test('文字コード変更と保存値復元も、前の期間説明を残さない',async()=>{
+ const ui=harness();await prepare(ui);assert.match(ui.element('#q-periodNote').textContent,/2026-04-01/);
+ ui.element('#q-encoding').value='shift_jis';await ui.event('#q-encoding','change');assert.ok(!ui.element('#q-periodNote').textContent.includes('2026-04-01'));
+ ui.element('#q-periodNote').textContent='旧年度 2026-04-01';ui.api.restore({...base,start:'2025-01',through:'2025-06'});assert.ok(!ui.element('#q-periodNote').textContent.includes('2026-04-01'));assert.equal(ui.element('#q-start').value,'2025-01');
 });

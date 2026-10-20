@@ -1,0 +1,14 @@
+{
+  "verifiedAt": "2026-10-20T13:20:31.517Z",
+  "ruleVersion": "jp-corp-wage-2026.10.20-web.9",
+  "codeHash": "75e79febe86b72f41619739bdc80e3dfd9d555c15fa9fb9fb792f5a32118eedc",
+  "clientHash": "8a64445421f08d9b05d8b4aeb8aa5b3c91b76a1359aea165bc1ed926df170573",
+  "sourceCount": 26,
+  "stagedSourceMatches": true,
+  "preparedWorkerMatches": true,
+  "workerBytes": 18345,
+  "workerSha256": "50facd88866158e042a75fb6d53487bc15059262f7a2b2fe87820c723d3a1c27",
+  "staticPath": "C:\\Users\\Matsumoto-kobe05\\Documents\\Codex\\2026-10-20\\task\\wage-tax-lab\\docs\\",
+  "workerPath": "C:\\Users\\Matsumoto-kobe05\\Documents\\Codex\\2026-10-20\\task\\private-account-selection-20261020\\web9-worker.js",
+  "publication": "Blocked; no GitHub push or hosted API edit/save/deploy performed."
+}
