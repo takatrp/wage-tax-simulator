@@ -1,7 +1,7 @@
 {
-  "ruleVersion": "jp-corp-wage-2026.10.20-web.5",
-  "codeHash": "5bc214a3d2697c0d43ad25476e7ed255d767e9e2de349c8e2e3f84efb0b2e23f",
-  "clientHash": "31623e22e9deeb916964b34658e12e96f53c87b5a5f2391d010274b835b32feb",
+  "ruleVersion": "jp-corp-wage-2026.10.20-web.6",
+  "codeHash": "72e97a035aafbdc9fd874450af93b7f2d2f06fb84d4b47e339142719a1606246",
+  "clientHash": "a11fa9f5875569769e325e22bac84405ca1abd3f62cab31b5321b6f6d9dfae6f",
   "features": {
     "smeR6": {
       "status": "approved",

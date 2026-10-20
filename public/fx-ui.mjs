@@ -17,7 +17,6 @@ export function mountFxImport({getInput,onApply,onDirty}){
  <div class="fields">${['current','previous'].flatMap(p=>['regular','bonus'].map(k=>'<label>'+(p==='current'?'当期':'前期')+' '+(k==='regular'?'通常給与':'賞与')+' 調整<input type="text" inputmode="numeric" id="fx-adjust-'+p+'-'+k+'" placeholder="未確認（差額なしは0）" maxlength="30"></label>')).join('')}</div>
  <div class="fx-checks"><label><input type="checkbox" id="fxSameCompany">全資料が上記の同一法人であると確認した（会社名列がない資料も含む）</label><label><input type="checkbox" id="fxComplete">全科目の仕訳出力で、当期は年度開始から最終完了月まで、前期は通年であり、未入力・部分月・月次累計・不足資料がないと確認した</label><label><input type="checkbox" id="fxScope">全科目を確認し、通常給与・賞与を漏れなく分類した。帳簿候補を給与台帳と照合し、役員・特殊関係者・国内雇用・損金・支給実績・未払/振替等の差額を上記調整に含めた</label><label><input type="checkbox" id="fxZeroMonths">給与候補仕訳のない月がある場合、支給なし又は上記給与調整で補完したと確認した</label></div>
  <p>継続雇用者・補塡・助成金・税額・法人資格は仕訳から確定しません。反映後も「未確認」とし、不足条件を補完するまで計算できません。今後の賞与・残月給与・助成金等の予測は別途入力します。</p><button id="fxApply" class="primary" disabled>確認した集計額を反映して不足条件へ</button></section></section>`);
- $('#csvFile').closest('.card').insertAdjacentHTML('afterbegin','<h3>標準集計CSV・従業員年度明細（補助）</h3><p>FX仕訳以外は、標準テンプレートと列マッピングを使えます。</p>');
  let files=[],generation=0,inspection=null,page=0;
  const config=()=>Object.fromEntries(['start','end','prevStart','prevEnd','cutoff'].map(k=>[k,$('#fx-'+k).value]));
  const sync=()=>{const input=getInput();for(const k of ['start','end','prevStart','prevEnd'])$('#fx-'+k).value=input[k];$('#fx-cutoff').value='';};

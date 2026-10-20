@@ -17,10 +17,11 @@ function harness(){
  const handlers=new Map(),elements=new Map();
  let roles=[],accounts=[],decodeCalls=0;
  function element(selector){
+  if(['#csvFile','#csvKind','#template','#applyCsv','#mapping'].includes(selector))throw new Error('Removed standard CSV control: '+selector);
   if(elements.has(selector))return elements.get(selector);
   let html='';
   const node={value:'',checked:false,disabled:false,hidden:false,textContent:'',className:'',dataset:{},
-   insertAdjacentHTML(){},closest(){return element('#standard-card');},
+   insertAdjacentHTML(){},
    addEventListener(event,handler){handlers.set(selector+':'+event,handler);}};
   Object.defineProperty(node,'innerHTML',{get:()=>html,set(value){
    html=value;

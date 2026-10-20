@@ -1,0 +1,31 @@
+{
+  "createdAt": "2026-10-20T08:36:15.358Z",
+  "ruleVersion": "jp-corp-wage-2026.10.20-web.6",
+  "codeHash": "72e97a035aafbdc9fd874450af93b7f2d2f06fb84d4b47e339142719a1606246",
+  "clientHash": "a11fa9f5875569769e325e22bac84405ca1abd3f62cab31b5321b6f6d9dfae6f",
+  "baseline": "419d0a5a5683659272d4fde5fe73e8c8f10b8839",
+  "unchangedCoreFiles": [
+    "calc.mjs",
+    "case.mjs",
+    "forecast.mjs",
+    "fields.mjs",
+    "csv.mjs",
+    "verification.mjs",
+    "workflow.mjs",
+    "fxcloud.mjs",
+    "entry.mjs",
+    "integrity.mjs",
+    "config.mjs"
+  ],
+  "rulesChange": "version string only",
+  "taxReviewScopeAndDeadlinePreserved": true,
+  "tests": {
+    "pass": 139,
+    "fail": 0
+  },
+  "ui": "FX CSV only; manual input preserved; removed standard/employee CSV controls and events",
+  "savedInputSchema": 1,
+  "legacyJsonValuesAndMethodPreserved": true,
+  "browserQA": "Same Chrome public-tab acquisition timed out at 15 seconds; real-browser final interaction unverified",
+  "originalCsvBytesTested": false
+}
