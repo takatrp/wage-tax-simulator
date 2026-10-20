@@ -25,6 +25,7 @@ export function selectRules(start) { return validDate(start) ? RULESETS.find(r =
 export const FRAME_NAMES = { sme:'中小企業者等向け', mid:'中堅企業向け', all:'全企業向け' };
 // Current NTA 5432 describes FY starts from 2025-04-01; it cannot approve 2024 eligibility.
 export const FEATURES = {
+ quickEstimate:{title:'中小企業の条件付き概算・年間給与見込',kind:'additional',from:'2024-04-01',through:'2027-03-31',dependencies:['nta-sme','nta-limits','nta-reform2024']},
  smeR6Early:{title:'中小基本計算・2024年度資格',kind:'basic',from:'2024-04-01',through:'2025-03-31',dependencies:['nta-sme','chusho-r6','nta-limits']},
  smeR6:{title:'中小基本計算・2025年度資格',kind:'basic',from:'2025-04-01',through:'2026-03-31',dependencies:['nta-sme','nta-size','nta-limits'],inputConditions:{certType:'none',carryBalance:'0',trainingClaim:'no'}},
  smeR8:{title:'中小基本計算・令和8年度',kind:'basic',from:'2026-04-01',through:'2027-03-31',dependencies:['nta-sme','nta-size','nta-limits'],inputConditions:{certType:'none',carryBalance:'0'}},

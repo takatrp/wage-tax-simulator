@@ -1,0 +1,29 @@
+{
+  "reviewedAt": "2026-10-20T09:03:06.677Z",
+  "codeHash": "b0d8400977c76e50aa9a99c8e30a31949e996866fc747b373eccb6ba70660366",
+  "clientHash": "84c3bc5f3c533767c2feb12700398ecafd04b328f331a4f085f9ece243b5382b",
+  "ruleVersion": "jp-corp-wage-2026.10.20-web.6",
+  "reviewers": [
+    "/root/quick_tax_review",
+    "/root/quick_state_review"
+  ],
+  "taxOutcome": "承認可能・残指摘なし（上記限定範囲）",
+  "scope": {
+    "from": "2024-04-01",
+    "through": "2027-03-31"
+  },
+  "sourceFingerprints": {
+    "nta-sme": "77b8fea1033a7bf32193665da092472636a2c9b523026b523ad6220071006bbb",
+    "nta-limits": "b9e10b4ba3f2e7b96b12979722e0f081b112c9980d8fe6f3173177cccf98e5c0",
+    "nta-reform2024": "a36a948ef1c8ae9ff7c2014a3c50d48ce3bc65fc8e73d28ca0733efcb8b46bdf"
+  },
+  "sourceFiles": {
+    "quick.mjs": "e3d92a9739872c2a3f5cb3f6743e33ea33b993908cfe12946e8c5800a7186025",
+    "quick-ui.mjs": "39ab4adcc76ff86247bbc802ea1d3fc942061e417695028ba2163d276cd3451a"
+  },
+  "limitations": [
+    "資格の確認・加算・繰越・申告確定額を承認しない",
+    "提供原本のバイト検証未完了",
+    "実ブラウザの最終印刷レイアウト未検証"
+  ]
+}

@@ -1,7 +1,7 @@
 {
   "ruleVersion": "jp-corp-wage-2026.10.20-web.6",
-  "codeHash": "72e97a035aafbdc9fd874450af93b7f2d2f06fb84d4b47e339142719a1606246",
-  "clientHash": "a11fa9f5875569769e325e22bac84405ca1abd3f62cab31b5321b6f6d9dfae6f",
+  "codeHash": "b0d8400977c76e50aa9a99c8e30a31949e996866fc747b373eccb6ba70660366",
+  "clientHash": "84c3bc5f3c533767c2feb12700398ecafd04b328f331a4f085f9ece243b5382b",
   "features": {
     "smeR6": {
       "status": "approved",
@@ -43,7 +43,22 @@
         "through": "2027-03-31"
       },
       "fingerprints": {}
+    },
+    "quickEstimate": {
+      "status": "approved",
+      "reviewer": "AIによる独立税務・コードレビュー（経営判断用の条件付き概算、申告用監査ではない）",
+      "reviewedAt": "2026-10-20T09:03:06.677Z",
+      "validUntil": "2026-11-20T00:00:00Z",
+      "coverage": {
+        "from": "2024-04-01",
+        "through": "2027-03-31"
+      },
+      "fingerprints": {
+        "nta-sme": "77b8fea1033a7bf32193665da092472636a2c9b523026b523ad6220071006bbb",
+        "nta-limits": "b9e10b4ba3f2e7b96b12979722e0f081b112c9980d8fe6f3173177cccf98e5c0",
+        "nta-reform2024": "a36a948ef1c8ae9ff7c2014a3c50d48ce3bc65fc8e73d28ca0733efcb8b46bdf"
+      }
     }
   },
-  "note": "通常内国法人・非受託・非通算・特殊法人なしの計画用概算に限定。認定なし・既存繰越0円・旧年度の教育加算なし。2024年度・中堅・全企業・認定/教育加算・繰越利用は未承認。validUntilはレビュー更新期限であり法的有効期限ではない。申告用監査保証ではない。"
+  "note": "通常内国法人・非受託・非通算・特殊法人なしの計画用概算に限定。認定なし・既存繰越0円・旧年度の教育加算なし。2024年度・中堅・全企業・認定/教育加算・繰越利用は未承認。validUntilはレビュー更新期限であり法的有効期限ではない。申告用監査保証ではない。 quickEstimateは中小企業資格・対象給与・通常12月・補塡助成金/他制度調整なしを明示仮定した独立の条件付き概算。2024-04-01〜2027-03-31開始、基本15/30%・年間見込・任意20%上限のみ。資格判定・加算・繰越を承認せず、smeR6Earlyの承認は拡張しない。"
 }
