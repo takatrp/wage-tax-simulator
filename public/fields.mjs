@@ -31,7 +31,8 @@ export const CERTS=[['unknown','未確認'],['none','該当認定なし'],['kuru
 export function initialInput(){return Object.fromEntries(FIELDS.map(([key,,type,def])=>[key,def??(type==='tri'||type==='cert'?'unknown':'')]));}
 export function validateSaved(data){
  if(!data||typeof data!=='object'||Array.isArray(data)||data.schema!==1||!data.input||typeof data.input!=='object'||Array.isArray(data.input))throw new Error('対応する保存形式ではありません。schema=1の入力ファイルを指定してください。');
- if(Object.keys(data).some(k=>!['schema','savedAt','input'].includes(k)))throw new Error('保存データに未知の項目があります。確認状態や結果の復元はできません。');
+ if(Object.keys(data).some(k=>!['schema','savedAt','input','inputMethod'].includes(k)))throw new Error('保存データに未知の項目があります。確認状態や結果の復元はできません。');
+ if(Object.hasOwn(data,'inputMethod')&&!['csv','manual'].includes(data.inputMethod))throw new Error('入力方法の保存値が不正です。');
  const allowed=new Set(FIELDS.map(f=>f[0]));if(Object.keys(data.input).some(k=>!allowed.has(k)))throw new Error('入力に未知の項目があります。');
  const out=initialInput();for(const [key,,type]of FIELDS){const v=Object.hasOwn(data.input,key)?data.input[key]:out[key];if(typeof v!=='string'||v.length>500)throw new Error(`保存項目 ${key} が不正です。`);if(type==='mode'&&!['actual','forecast'].includes(v))throw new Error('計算モードが不正です。');if(type==='tri'&&!['yes','no','unknown'].includes(v))throw new Error(`${key} の選択値が不正です。`);if(type==='cert'&&!CERTS.some(c=>c[0]===v))throw new Error('認定種別が不正です。');if(type==='date'&&v!==''&&!validDate(v))throw new Error(`${key} の日付が不正です。`);if(type==='money'&&v!=='')amount(v,key);if(type==='signed'&&v!==''&&!/^-?(0|[1-9]\d*)$/.test(v.trim()))throw new Error(`${key} の補正額が不正です。`);out[key]=v;}return out;
 }

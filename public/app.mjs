@@ -8,14 +8,20 @@ import {checkEndpoint} from './config.mjs';
 import {EXPECTED_CODE_HASH,EXPECTED_CLIENT_HASH} from './build-info.mjs';
 import {verifyPublicSources}from'./integrity.mjs';
 import {calculateCase} from './case.mjs';
+import {newCase,saveCase,restoreCase,validInputMethod} from './entry.mjs';
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const yen=v=>new Intl.NumberFormat('ja-JP').format(BigInt(v??'0'));
 let checkClock=null;
-let input=initialInput(),check=null,result=null,csvTable=null,csvKind=null,csvGeneration=0,checking=false,resultInput=null;
+const entry=newCase();
+let input=entry.input,inputMethod=entry.inputMethod,check=null,result=null,csvTable=null,csvKind=null,csvGeneration=0,checking=false,resultInput=null;
 function notify(message,error=false){$('#notice').hidden=false;$('#notice').className='notice'+(error?' error':'');$('#notice').textContent=message;}
 function tab(name){$$('.nav').forEach(n=>{n.classList.toggle('active',n.dataset.tab===name);n.setAttribute('aria-current',n.dataset.tab===name?'page':'false');});for(const n of ['input','csv','result','sources'])$('#'+n+'Panel').hidden=n!==name;window.scrollTo(0,0);}
 $$('.nav').forEach(n=>n.addEventListener('click',()=>tab(n.dataset.tab)));
+function renderInputMethod(){$('#inputMethod').value=inputMethod;}
+$('#inputMethod').addEventListener('change',e=>{inputMethod=validInputMethod(e.target.value);tab(inputMethod==='csv'?'csv':'input');});
+$('#manualEntry').addEventListener('click',()=>{inputMethod='manual';renderInputMethod();tab('input');});
+$('#resetInput').addEventListener('click',()=>{if(!window.confirm('現在の画面入力をリセットします。端末に保存した入力は残ります。'))return;const next=newCase();input=next.input;inputMethod=next.inputMethod;clearCsv();invalidate();renderForm();renderInputMethod();tab(next.view);notify('新しいCSVから開始できます。保存済み入力は削除していません。');});
 function fieldLabel(key,label){if(input.mode!=='forecast')return label;return ({grossCurrent:'当期給与累計（賞与分離なら通常給与のみ・円）',grossPrevious:'前期通年 全国内雇用者給与総額（円）',reimburseCurrent:'当期 通常補塡額の年末見込（円）',subsidyCurrent:'当期 雇用安定助成金の年末見込（円）',corporateTax:'調整前法人税額の年末見込（円）',continuousCurrent:'当期 継続雇用者給与の通年見込（補塡控除後・円）',continuousPrevious:'前期通年 継続雇用者給与（補塡控除後・円）',trainingCurrent:'当期 教育費の年末見込（補助金控除後・円）',continuousReviewed:'既知の対象者条件・集計を確認済み（全期間要件は上記の仮定と別）'})[key]??label;}
 function fieldHtml([key,label,type]){
  label=fieldLabel(key,label);
@@ -83,9 +89,9 @@ window.addEventListener('beforeprint',()=>{if(!resultStillAuthorized()){invalida
 setInterval(()=>{renderFreshness();if(result&&!resultStillAuthorized())invalidate();},1000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){invalidate();refresh();}});
 
-function saved(){return {schema:1,savedAt:new Date().toISOString(),input:{...input}};}
+function saved(){return saveCase(input,inputMethod);}
 function download(content,name,type){const blob=new Blob([content],{type});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
-async function restore(data){input=validateSaved(data);csvTable=null;csvGeneration++;$('#mapping').innerHTML='';$('#applyCsv').hidden=true;$('#csvFile').value='';invalidate();renderForm();await refresh();notify('入力を復元しました。以前の公式確認状態・結果は復元せず、再確認しました。');tab('input');}
+async function restore(data){const restored=restoreCase(data,inputMethod);input=restored.input;inputMethod=restored.inputMethod;csvTable=null;csvGeneration++;$('#mapping').innerHTML='';$('#applyCsv').hidden=true;$('#csvFile').value='';invalidate();renderForm();renderInputMethod();await refresh();notify('入力を復元しました。入力方法と値を保持し、以前の確認状態・結果は戻さず再確認しました。');tab(restored.view);}
 $('#saveLocal').addEventListener('click',()=>{try{localStorage.setItem('wage-tax-input-v1',JSON.stringify(saved()));notify('このブラウザに入力集計値を保存しました。個人別CSVは保存していません。保存値は暗号化されません。');}catch(e){notify('端末保存できませんでした。JSON保存をご利用ください。',true);}});
 $('#restoreLocal').addEventListener('click',async()=>{try{const value=localStorage.getItem('wage-tax-input-v1');if(!value)throw new Error('端末に保存された入力はありません。');await restore(JSON.parse(value));}catch(e){notify(e.message,true);}});
 $('#downloadState').addEventListener('click',()=>download(JSON.stringify(saved(),null,2),'wage-tax-input.json','application/json;charset=utf-8'));
@@ -98,8 +104,8 @@ $('#template').addEventListener('click',()=>{const kind=$('#csvKind').value==='e
 $('#employeeColumns').innerHTML='<ul>'+Object.values(EMP_FIELDS).map(x=>`<li>${x}</li>`).join('')+'</ul>';
 $('#csvFile').addEventListener('change',async e=>{const f=e.target.files[0];csvTable=null;$('#mapping').innerHTML='';$('#applyCsv').hidden=true;if(!f)return;const generation=++csvGeneration;const kind=$('#csvKind').value,encoding=$('#encoding').value;try{if(f.size>5*1024*1024)throw new Error('CSVは5MB以内にしてください。');const table=parseCsv(decodeCsv(await f.arrayBuffer(),encoding),{allowSignedAmounts:input.mode==='forecast'});if(generation!==csvGeneration)return;csvTable=table;csvKind=kind;const fields=kind==='employee'?EMP_FIELDS:AGG_FIELDS,mapping=autoMap(table.headers,fields);$('#csvStatus').textContent=`${table.rows.length}行 / ${table.headers.length}列を読み取りました。下の割当を確認してください。まだ入力には反映していません。`;$('#mapping').innerHTML='<div class="mapping-grid">'+Object.entries(fields).map(([key,label])=>`<label>${label}<select data-map="${key}"><option value="">未割当</option>${table.headers.map(h=>`<option value="${esc(h)}" ${mapping[key]===h?'selected':''}>${esc(h)}</option>`).join('')}</select></label>`).join('')+'</div>';$('#applyCsv').hidden=false;}catch(err){$('#csvStatus').textContent=err.message;notify('CSVの取込を停止しました。'+err.message,true);}});
 $('#applyCsv').addEventListener('click',()=>{try{if(!csvTable)throw new Error('CSVを選択してください。');if(input.mode==='forecast'&&csvKind==='employee')throw new Error('初版の期中取込は集計CSVを使ってください。個人別明細の全期間資格を期中データから自動確定しません。');const mapping=Object.fromEntries($$('[data-map]').map(el=>[el.dataset.map,el.value]));let out;if(csvKind==='employee'){const parsed=importEmployees(csvTable,mapping);if(!parsed.canApply){$('#csvStatus').textContent=parsed.issues.slice(0,20).join('\n');throw new Error(`${parsed.issues.length}行に未確認属性があります。自動反映を停止しました。`);}out={...parsed.metadata,...parsed.totals};}else out=importAggregate(csvTable,mapping);
-   input=mergeCsvInput(input,out,csvKind);invalidate();renderForm();notify('CSVの集計値を反映しました。前案件の法人資格・認定・繰越条件は初期化しました。対象年度・不足項目を確認してください。個人別明細はメモリから破棄しました。');csvTable=null;csvGeneration++;$('#mapping').innerHTML='';$('#applyCsv').hidden=true;$('#csvFile').value='';tab('input');
+   input=mergeCsvInput(input,out,csvKind);inputMethod='csv';invalidate();renderForm();renderInputMethod();notify('CSVの集計値を反映しました。前案件の法人資格・認定・繰越条件は初期化しました。対象年度・不足項目を確認してください。個人別明細はメモリから破棄しました。');csvTable=null;csvGeneration++;$('#mapping').innerHTML='';$('#applyCsv').hidden=true;$('#csvFile').value='';tab('input');
  }catch(e){notify(e.message,true);}});
-renderForm();renderFreshness();refresh();
+renderForm();renderInputMethod();tab(entry.view);renderFreshness();refresh();
 
 
