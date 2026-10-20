@@ -18,7 +18,7 @@ export const GROUPS = [
  ['certType','認定の種類','cert'],['certDate','認定取得日','date'],['certValidAtEnd','期末時点で認定が有効','tri'],['certReviewed','段階・取得時期・経過措置等の税制要件を確認済み','tri']
  ]},
  {title:'中小企業向け制度の繰越利用',hint:'有効期限・残高・毎期の明細添付を申告書で確認した残高のみ入力します。当期の中小企業該当性と利用資格は別に判定します。初版は期限を自動推定しません。',fields:[
- ['carryBalance','有効な既存繰越残高（円・ない場合0）','money'],['carryReviewed','有効残高・期限・連続申告・当期利用資格を申告書で確認済み','tri']
+ ['carryBalance','有効な既存繰越残高（円・ない場合0）','money'],['carryReviewed','有効残高・期限・連続申告・当期利用資格を申告書で確認済み','tri'],['csvImportBasis','CSV取込の集計根拠（任意・復元時は原本を再確認）','text']
  ]}
 ];
 GROUPS.splice(1,0,{title:'着地予測の換算期間・賞与・年末見込',forecast:true,hint:'12か月事業年度の期中データを使う年間見込です。短期事業年度の法定換算ではありません。給与欄の当期額は累計、前期額は通年実績を入力してください。',fields:[

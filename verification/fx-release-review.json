@@ -1,0 +1,34 @@
+{
+  "createdAt": "2026-10-20T07:59:08.496Z",
+  "ruleVersion": "jp-corp-wage-2026.10.20-web.5",
+  "codeHash": "5bc214a3d2697c0d43ad25476e7ed255d767e9e2de349c8e2e3f84efb0b2e23f",
+  "clientHash": "31623e22e9deeb916964b34658e12e96f53c87b5a5f2391d010274b835b32feb",
+  "regressionTests": {
+    "pass": 135,
+    "fail": 0
+  },
+  "csvReview": {
+    "agent": "review_fx_csv_final",
+    "unresolvedP1P2": 0,
+    "regressionCases": 40,
+    "independentDuplicateCases": 12
+  },
+  "taxReview": {
+    "agent": "review_fx_tax_final",
+    "unresolvedP1P2": 0,
+    "regressionCases": 81,
+    "independentCases": 100,
+    "existingLimitedApprovalMaintained": true
+  },
+  "scopePreserved": true,
+  "reviewUpdateDue": "2026-11-20T00:00:00Z",
+  "originalCsvBytesTested": false,
+  "fixtures": "synthetic only",
+  "browserQA": {
+    "initialCsvEntry": "observed before disconnect",
+    "finalFileChooser": "unverified: browser tool transport closed and then timed out after reconnect",
+    "mobile": "unverified",
+    "reset": "unit and state tests only"
+  },
+  "publicationStatus": "prepared, not yet deployed"
+}
