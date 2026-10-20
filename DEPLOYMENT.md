@@ -1,4 +1,29 @@
-# 公開と本番確認 — 2026-10-20 UTC
+# 現在の配備 — web.8（2026-10-20 11:52 UTC）
+
+公開ツール：https://takatrp.github.io/wage-tax-simulator/
+照合API：https://wage-tax-rule-check.takatrp0222.chatgpt.site
+
+空伝票番号・番号列欠落の警告付き保持と、大量FX CSVのブラウザWorker取込を公開しました。1件100,000行・20MiB、全体200,000行・40MiB・最大8件。全208テスト成功、独立レビューに未解決所見なし。実Chromeで50,001/100,000行の集計一致、100,001行停止、取消・同じファイル再選択、CP932を確認。原本のバイト互換性は未検証です。
+
+実装commit：90ff0f414b2b5ff1ad54496bb5b8838f0fb15d54
+実装版：jp-corp-wage-2026.10.20-web.8
+コード指紋：2a26b6c01647c80a6c20955b5ade50ae7292f27a0adbfc9d1d70aca81a03b5f5
+画面指紋：cb1d51eadb8e59ce0bba9aa2792d64acbb87052026c0551913a7b5f31a2fe6bc
+API source：99b3409220725349cb6020653928a5b32d91d2e0
+保存版9：appgprj_6ad6e84462b88191af122b3b9a9869b0~appgver_6457cc88f44c81918d67ec18da580130
+配備：appgdep_6ad755b7ead08191844bf8ab82900ada（succeeded）
+
+11:51:48Zの実応答で2回の空POSTのID・確認時刻更新、web.8の指紋、4つの限定承認機能を確認。Pages全25ソースが承認指紋と一致。実Chromeでもweb.8と公式確認時刻、限定照合の表示を確認しました。
+
+税額算式、制度の限定承認範囲、公式資料の承認指紋、レビュー更新期限を拡張していません。機能別の変更疑い・取得失敗・期限切れ・未対応年度の停止を維持します。元CSV・社名・給与・認証情報は公開物に含めず、確認APIへ送信しません。
+
+公開pushは一度自動審査で拒否されましたが、既存GitHub/API公開と同じ公開先への修正承認の原文を追加確認し、再試行が許可され成功しました。未実行・承認待ちの配備はありません。
+
+証拠：verification/large-import-tests.txt、large-import-independent-review.json、large-import-performance.json、large-import-artifact.json、large-import-deployment.json、large-import-live-api.json、large-import-live-pages.json。
+
+---
+
+# 過去の配備記録
 
 本番公開と検証は完了。承認待ち・実行中の配備はありません。対象は計画用に限定承認した中小基本計算と年間見込です。申告用の確定計算・監査保証ではありません。
 

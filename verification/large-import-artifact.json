@@ -1,0 +1,13 @@
+{
+  "checkedAt": "2026-10-20T11:47:49.854Z",
+  "sourceCommit": "99b3409220725349cb6020653928a5b32d91d2e0",
+  "workerBytes": 17914,
+  "sourceEqualsBuildEqualsArchive": true,
+  "ruleVersion": "jp-corp-wage-2026.10.20-web.8",
+  "codeHash": "2a26b6c01647c80a6c20955b5ade50ae7292f27a0adbfc9d1d70aca81a03b5f5",
+  "clientHash": "cb1d51eadb8e59ce0bba9aa2792d64acbb87052026c0551913a7b5f31a2fe6bc",
+  "archiveSha256": "b88a924ab294078270a20ef608545012750d9b611e4aa0ceb735165364d40b39",
+  "containsOriginalCsv": false,
+  "published": true,
+  "deploymentId": "appgdep_6ad755b7ead08191844bf8ab82900ada"
+}

@@ -1,0 +1,41 @@
+{
+  "recordedAt": "2026-10-20T11:53:59.327Z",
+  "implementationCommit": "90ff0f414b2b5ff1ad54496bb5b8838f0fb15d54",
+  "ruleVersion": "jp-corp-wage-2026.10.20-web.8",
+  "codeHash": "2a26b6c01647c80a6c20955b5ade50ae7292f27a0adbfc9d1d70aca81a03b5f5",
+  "clientHash": "cb1d51eadb8e59ce0bba9aa2792d64acbb87052026c0551913a7b5f31a2fe6bc",
+  "tests": 208,
+  "independentReview": "no unresolved findings",
+  "github": {
+    "repository": "https://github.com/takatrp/wage-tax-simulator",
+    "targetBranch": "main",
+    "implementationCommit": "90ff0f414b2b5ff1ad54496bb5b8838f0fb15d54",
+    "pushStatus": "succeeded",
+    "initialPushDenied": true,
+    "approvalResolvedBy": "追加された親会話の公開承認原文を確認し、自動承認レビューで再試行が許可された。同じ公開先への更新のみ。",
+    "approvalQuestionPending": false
+  },
+  "api": {
+    "projectId": "appgprj_6ad6e84462b88191af122b3b9a9869b0",
+    "sourceCommit": "99b3409220725349cb6020653928a5b32d91d2e0",
+    "savedVersionId": "appgprj_6ad6e84462b88191af122b3b9a9869b0~appgver_6457cc88f44c81918d67ec18da580130",
+    "versionNumber": 9,
+    "deploymentId": "appgdep_6ad755b7ead08191844bf8ab82900ada",
+    "deployed": true,
+    "normalizedArchiveHash": "sha256:fe90f214ad3862dd3ed5b3b9611d1a31abb4aba94c4b2dd05527e804d1ac4e92",
+    "deploymentStatus": "succeeded",
+    "deployedAt": "2026-10-20T11:51:24.526967+00:00"
+  },
+  "originalCsvIncluded": false,
+  "liveRelease": "jp-corp-wage-2026.10.20-web.8",
+  "verifiedAt": "2026-10-20T11:51:48.405Z",
+  "sourceBuildArchiveMatches": true,
+  "all25PublicSourceBytesMatch": true,
+  "twoFreshEmptyPosts": true,
+  "browser": {
+    "liveSourcePanelVersion": "jp-corp-wage-2026.10.20-web.8",
+    "officialAttemptAt": "2026-10-20T11:52:06.469Z",
+    "quickEstimate": "限定照合済み",
+    "localSyntheticImport": "50,001/100,000 accepted; 100,001 rejected; cancel/same-file retry and CP932 verified"
+  }
+}
