@@ -1,0 +1,12 @@
+{
+  "verifiedAt": "2026-10-20T08:19:32.447Z",
+  "url": "https://takatrp.github.io/wage-tax-simulator/",
+  "release": "releases/5bc214a3d2697c0d43ad25476e7ed255d767e9e2de349c8e2e3f84efb0b2e23f/",
+  "codeHash": "5bc214a3d2697c0d43ad25476e7ed255d767e9e2de349c8e2e3f84efb0b2e23f",
+  "clientHash": "31623e22e9deeb916964b34658e12e96f53c87b5a5f2391d010274b835b32feb",
+  "moduleCount": 17,
+  "allFilesMatch": true,
+  "initialCsvMarkup": true,
+  "originalCsvBytesTested": false,
+  "browserVisualQA": "unverified: browser tool unavailable"
+}

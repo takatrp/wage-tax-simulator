@@ -30,5 +30,49 @@
     "mobile": "unverified",
     "reset": "unit and state tests only"
   },
-  "publicationStatus": "prepared, not yet deployed"
+  "publicationStatus": "published; API and all 17 client files verified",
+  "deployment": {
+    "recordedAt": "2026-10-20T08:20:46.146Z",
+    "applicationUrl": "https://takatrp.github.io/wage-tax-simulator/",
+    "implementationCommit": "03bbcae1d70104bf256fe38c418028da73da05fd",
+    "backendUrl": "https://wage-tax-rule-check.takatrp0222.chatgpt.site",
+    "backendSourceCommit": "13e188d227c11dc3a59ab6465ee62a6910c8091f",
+    "siteVersion": 6,
+    "siteVersionId": "appgprj_6ad6e84462b88191af122b3b9a9869b0~appgver_89abb0386438819180e9c28322d206db",
+    "deploymentId": "appgdep_6ad7240388b08191aee802bd6b1a0e83",
+    "deployedAt": "2026-10-20T08:19:20.558664Z",
+    "codeHash": "5bc214a3d2697c0d43ad25476e7ed255d767e9e2de349c8e2e3f84efb0b2e23f",
+    "clientHash": "31623e22e9deeb916964b34658e12e96f53c87b5a5f2391d010274b835b32feb",
+    "liveCheckedAt": [
+      "2026-10-20T08:19:29.891Z",
+      "2026-10-20T08:19:31.569Z"
+    ],
+    "readyFeatureIds": [
+      "smeR6",
+      "smeR8",
+      "forecastMethod"
+    ],
+    "artifactGuard": "stale Worker rejected; current source bytes accepted before packaging",
+    "originalCsvBytesTested": false,
+    "browserQA": {
+      "state": "unverified",
+      "reason": "Existing Chrome 1 getState/getTab timed out after reconnect and kernel reset. Final known-public-tab acquisition also timed out at 15 seconds. No browser approval denial was reported.",
+      "fileChooser": "earlier action ended with Transport closed; outcome unknown",
+      "mobile": "not verified",
+      "reset": "unit/state tests passed; final real-browser operation unverified"
+    },
+    "safety": {
+      "publicScopeUnchanged": true,
+      "reviewDueUnchanged": "2026-11-20T00:00:00Z",
+      "newApiKeys": false,
+      "newOAuth": false,
+      "realCsvPublished": false
+    },
+    "correctiveDeployment": {
+      "oldSavedVersion": 5,
+      "oldArtifactWorker": "web.4",
+      "oldVersionRedeploy": "denied by automatic approval review; not executed",
+      "remedy": "new backend commit adds source/build byte equality guard; fresh build and validated archive saved as version 6; live response verified as web.5"
+    }
+  }
 }
